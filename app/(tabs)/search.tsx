@@ -18,13 +18,13 @@ export default function Search() {
 
 	const fetchSearchProducts = async () => {
 		const { data: distributors, error: error1 } = await supabase
-			.from('distributors-card')
+			.from('distributors_card')
 			.select('*')
 			.ilike('name', `%${searchQuery}%`)
 			.order('id', { ascending: true })
 
 		const { data: recomend, error: error2 } = await supabase
-			.from('recomend-card')
+			.from('recomend_card')
 			.select('*')
 			.ilike('name', `%${searchQuery}%`)
 			.order('id', { ascending: true })

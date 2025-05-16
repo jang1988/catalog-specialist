@@ -35,7 +35,9 @@ export default function Index() {
 				<HeaderLogo />
 
 				<SearchBar
-					onPress={() => router.push('/search')}
+					onPress={() => {
+						router.push('/search');
+					}}
 					placeholder='Пошук пристрою...'
 					editable={false}
 				/>
