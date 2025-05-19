@@ -6,9 +6,7 @@ export interface Product {
 	voltage?: string[];
 	type?: string[];
 	num_lines?: string;
-	data_1?: string;
-	data_2?: string;
-	data_3?: string;
+	bar?: string;
 	desc?: string;
 	variants?: Variant[];
 }
@@ -19,6 +17,7 @@ export interface Variant {
   thread: string;
   voltage: string;
   type: string;
+  lever: string;
   delivery?: string;
   flow?: string;
 }

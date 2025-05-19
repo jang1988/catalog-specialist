@@ -1,11 +1,12 @@
 import { Product, Variant } from '@/types/interfaces';
 import { fetchProductById } from '@/utils/useDataFetch';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
 	Image,
+	RefreshControl,
 	ScrollView,
 	Text,
 	TouchableOpacity,
@@ -22,9 +23,10 @@ export default function ProductDetails() {
 
 	const [selectedVoltage, setSelectedVoltage] = useState('');
 	const [selectedType, setSelectedType] = useState('');
+	const [selectedLever, setSelectedLever] = useState('');
 	const [selectedThread, setSelectedThread] = useState('');
-	const [actualFlow, setActualFlow] = useState('');
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
+	const [refreshing, setRefreshing] = useState(false);
 
 	// Получение данных товара
 	useEffect(() => {
@@ -35,9 +37,11 @@ export default function ProductDetails() {
 
 				if (data.variants && data.variants.length > 0) {
 					const defaultVariant = data.variants[0];
-					setSelectedVoltage(defaultVariant.voltage);
-					setSelectedType(defaultVariant.type);
-					setSelectedThread(defaultVariant.thread);
+					setSelectedVoltage(defaultVariant.voltage || '');
+					setSelectedType(defaultVariant.type || '');
+					setSelectedThread(defaultVariant.thread || '');
+					setSelectedLever(defaultVariant.lever || '');
+					setActualVariant(defaultVariant);
 				}
 			} catch (err: any) {
 				setError(err.message || 'Ошибка загрузки');
@@ -55,32 +59,53 @@ export default function ProductDetails() {
 		}
 	}, [id]);
 
+	// Сброс выбора на первый вариант при свайпе вниз
+	const handleRefresh = useCallback(() => {
+		if (!product?.variants?.length) return;
+		setRefreshing(true);
+		const defaultVariant = product.variants[0];
+		setSelectedVoltage(defaultVariant.voltage || '');
+		setSelectedType(defaultVariant.type || '');
+		setSelectedThread(defaultVariant.thread || '');
+		setSelectedLever(defaultVariant.lever || '');
+		setActualVariant(defaultVariant);
+		setRefreshing(false);
+	}, [product]);
+
 	// Фильтрация вариантов при изменении выбора
 	useEffect(() => {
 		if (!product?.variants) return;
 
 		const found = product.variants.find(
 			v =>
-				v.voltage === selectedVoltage &&
-				v.type === selectedType &&
-				v.thread === selectedThread &&
-				(!actualFlow || v.flow === actualFlow)
+				(selectedVoltage === '' || v.voltage === selectedVoltage) &&
+				(selectedType === '' || v.type === selectedType) &&
+				(selectedThread === '' || v.thread === selectedThread) &&
+				(selectedLever === '' || v.lever === selectedLever)
 		);
 
 		setActualVariant(found ?? null);
 
 		// Если комбинация не найдена, показываем уведомление
-		if (!found && selectedVoltage && selectedType && selectedThread) {
+		if (
+			!found &&
+			selectedVoltage &&
+			selectedType &&
+			selectedThread &&
+			selectedLever
+		) {
 			Alert.alert(
 				'Внимание',
 				'Выбранная комбинация недоступна. Пожалуйста, выберите другие параметры.',
 				[{ text: 'OK' }]
 			);
 		}
-	}, [selectedVoltage, selectedType, selectedThread, product]);
+	}, [selectedVoltage, selectedType, selectedThread, selectedLever, product]);
 
 	// Функция для фильтрации совместимых вариантов
-	const getCompatibleValues = (field: 'type' | 'voltage' | 'thread') => {
+	const getCompatibleValues = (
+		field: 'type' | 'voltage' | 'thread' | 'lever'
+	) => {
 		if (!product?.variants) return [];
 
 		// Фильтруем варианты, которые соответствуют уже выбранным значениям
@@ -93,13 +118,21 @@ export default function ProductDetails() {
 						const voltageMatch =
 							!selectedVoltage || v.voltage === selectedVoltage;
 						const typeMatch = !selectedType || v.type === selectedType;
+						const leverMatch = !selectedLever || v.lever === selectedLever;
 
 						// Исключаем текущее поле из проверки
-						if (field === 'thread') return voltageMatch && typeMatch;
-						if (field === 'voltage') return threadMatch && typeMatch;
-						return threadMatch && voltageMatch;
+						if (field === 'thread')
+							return voltageMatch && typeMatch && leverMatch;
+						if (field === 'voltage')
+							return threadMatch && typeMatch && leverMatch;
+						if (field === 'type')
+							return threadMatch && voltageMatch && leverMatch;
+						if (field === 'lever')
+							return threadMatch && voltageMatch && typeMatch;
+						return true;
 					})
 					.map(v => v[field])
+					.filter(value => value && value.trim() !== '')
 			)
 		);
 	};
@@ -112,6 +145,35 @@ export default function ProductDetails() {
 	// Получение информации о доставке для текущего варианта
 	const getDeliveryInfo = () => {
 		return actualVariant?.delivery || '';
+	};
+
+	// Функция для получения понятного названия типа
+	const getTypeName = (typeCode: string) => {
+		const typeMap: Record<string, string> = {
+			C: 'з закритим центром',
+			E: 'з відкритим центром',
+			P: 'подачa на обидва входи',
+			NC: 'нормально закритий',
+			NO: 'нормально відкритий',
+			L: 'з фіксацією',
+			LS: 'без фіксації',
+			H: 'без пружини повернення',
+			HS: 'з пружиною повернення',
+			PP: 'втоплена кнопка',
+			PPL: 'кнопка',
+			TB: 'селектор',
+			PB: 'кнопка грибок',
+			EB: 'кнопка-грибок з фіксацією',
+			R: 'ролик з важелем',
+			PU: 'кнопковий',
+			PS: 'шток із пружиною',
+			RO: 'звичайний ролик',
+			AN: 'антенна',
+			LT: 'ричаговий',
+			RU: 'роликовий важіль',
+			RL: 'важіль із роликом',
+		};
+		return typeMap[typeCode] || typeCode;
 	};
 
 	if (loading) {
@@ -154,20 +216,25 @@ export default function ProductDetails() {
 	}
 
 	// Список совместимых значений
-	const compatibleThreads = getCompatibleValues('thread').filter(
-		thread => thread.trim() !== ''
-	);
-	const compatibleTypes = getCompatibleValues('type').filter(
-		type => type.trim() !== ''
-	);
-	const compatibleVoltages = getCompatibleValues('voltage').filter(
-		voltage => voltage.trim() !== ''
-	);
+	const compatibleThreads = getCompatibleValues('thread');
+	const compatibleTypes = getCompatibleValues('type');
+	const compatibleVoltages = getCompatibleValues('voltage');
+	const compatibleLevers = getCompatibleValues('lever');
 	const hasFlow = actualVariant?.flow?.trim() !== '';
 
 	return (
 		<View className='bg-primary flex-1'>
-			<ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+			<ScrollView
+				contentContainerStyle={{ paddingBottom: 80 }}
+				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={handleRefresh}
+						tintColor='#fff'
+					/>
+				}
+			>
 				<View className='relative'>
 					<Image
 						source={{
@@ -204,6 +271,26 @@ export default function ProductDetails() {
 									{actualVariant.model}
 								</Text>
 							</View>
+							{actualVariant?.type && (
+								<View className='flex-row justify-between items-center mb-2'>
+									<Text className='text-white text-base font-semibold'>
+										Тип клапана:
+									</Text>
+									<Text className='text-white text-base'>
+										{getTypeName(actualVariant.type)}
+									</Text>
+								</View>
+							)}
+							{actualVariant?.lever && (
+								<View className='flex-row justify-between items-center mb-2'>
+									<Text className='text-white text-base font-semibold'>
+										Тип перемикача:
+									</Text>
+									<Text className='text-white text-base'>
+										{getTypeName(actualVariant.lever)}
+									</Text>
+								</View>
+							)}
 							{hasFlow && (
 								<View className='flex-row justify-between items-center mb-2'>
 									<Text className='text-white text-base font-semibold'>
@@ -211,6 +298,16 @@ export default function ProductDetails() {
 									</Text>
 									<Text className='text-white text-base'>
 										{actualVariant?.flow}
+									</Text>
+								</View>
+							)}
+							{product?.num_lines && (
+								<View className='flex-row justify-between items-center mb-2'>
+									<Text className='text-white text-base font-semibold'>
+										Робочий тиск:
+									</Text>
+									<Text className='text-white text-base'>
+										{product?.bar} bar
 									</Text>
 								</View>
 							)}
@@ -263,11 +360,11 @@ export default function ProductDetails() {
 						</View>
 					)}
 
-					{/* Тип */}
+					{/* Тип клапана */}
 					{compatibleTypes.length > 0 && (
 						<View className='mb-4'>
 							<Text className='text-white text-xl font-semibold mb-2'>
-								Тип:
+								Тип клапана:
 							</Text>
 							<View className='flex-row flex-wrap gap-2'>
 								{compatibleTypes.map(type => (
@@ -286,6 +383,36 @@ export default function ProductDetails() {
 											}`}
 										>
 											{type}
+										</Text>
+									</TouchableOpacity>
+								))}
+							</View>
+						</View>
+					)}
+
+					{/* Тип кнопки (рычаг) */}
+					{compatibleLevers.length > 0 && (
+						<View className='mb-4'>
+							<Text className='text-white text-xl font-semibold mb-2'>
+								Тип перемикача:
+							</Text>
+							<View className='flex-row flex-wrap gap-2'>
+								{compatibleLevers.map(lever => (
+									<TouchableOpacity
+										key={lever}
+										onPress={() => setSelectedLever(lever)}
+										className={`px-3 py-2 rounded ${
+											selectedLever === lever ? 'bg-white' : 'bg-gray-700'
+										}`}
+									>
+										<Text
+											className={`${
+												selectedLever === lever
+													? 'text-primary font-bold'
+													: 'text-light-200'
+											}`}
+										>
+											{lever}
 										</Text>
 									</TouchableOpacity>
 								))}
