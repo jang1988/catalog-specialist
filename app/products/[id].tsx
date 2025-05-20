@@ -1,12 +1,11 @@
 import { Product, Variant } from '@/types/interfaces';
 import { fetchProductById } from '@/utils/useDataFetch';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
 	Image,
-	RefreshControl,
 	ScrollView,
 	Text,
 	TouchableOpacity,
@@ -15,26 +14,34 @@ import {
 
 export default function ProductDetails() {
 	const router = useRouter();
+	// Получаем ID продукта и название таблицы из параметров URL
 	const { id } = useLocalSearchParams();
+	const { table } = useLocalSearchParams();
+
+	// Состояния для хранения данных продукта и управления UI
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [imageError, setImageError] = useState(false);
 
+	// Состояния для выбранных параметров варианта продукта
 	const [selectedVoltage, setSelectedVoltage] = useState('');
 	const [selectedType, setSelectedType] = useState('');
 	const [selectedLever, setSelectedLever] = useState('');
 	const [selectedThread, setSelectedThread] = useState('');
-	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
-	const [refreshing, setRefreshing] = useState(false);
 
-	// Получение данных товара
+	// Текущий активный вариант продукта (на основе выбранных параметров)
+	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
+
+	// Эффект для загрузки данных продукта при монтировании компонента
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const data = await fetchProductById(id.toString());
+				// Запрашиваем данные продукта по ID и таблице
+				const data = await fetchProductById(id.toString(), table?.toString());
 				setProduct(data);
 
+				// Если есть варианты, устанавливаем первый как вариант по умолчанию
 				if (data.variants && data.variants.length > 0) {
 					const defaultVariant = data.variants[0];
 					setSelectedVoltage(defaultVariant.voltage || '');
@@ -59,23 +66,11 @@ export default function ProductDetails() {
 		}
 	}, [id]);
 
-	// Сброс выбора на первый вариант при свайпе вниз
-	const handleRefresh = useCallback(() => {
-		if (!product?.variants?.length) return;
-		setRefreshing(true);
-		const defaultVariant = product.variants[0];
-		setSelectedVoltage(defaultVariant.voltage || '');
-		setSelectedType(defaultVariant.type || '');
-		setSelectedThread(defaultVariant.thread || '');
-		setSelectedLever(defaultVariant.lever || '');
-		setActualVariant(defaultVariant);
-		setRefreshing(false);
-	}, [product]);
-
-	// Фильтрация вариантов при изменении выбора
+	// Эффект для фильтрации вариантов при изменении выбранных параметров
 	useEffect(() => {
 		if (!product?.variants) return;
 
+		// Ищем вариант, соответствующий выбранным параметрам
 		const found = product.variants.find(
 			v =>
 				(selectedVoltage === '' || v.voltage === selectedVoltage) &&
@@ -86,7 +81,7 @@ export default function ProductDetails() {
 
 		setActualVariant(found ?? null);
 
-		// Если комбинация не найдена, показываем уведомление
+		// Показываем предупреждение, если комбинация параметров недоступна
 		if (
 			!found &&
 			selectedVoltage &&
@@ -102,25 +97,29 @@ export default function ProductDetails() {
 		}
 	}, [selectedVoltage, selectedType, selectedThread, selectedLever, product]);
 
-	// Функция для фильтрации совместимых вариантов
+	/**
+	 * Функция для получения совместимых значений определенного поля
+	 * @param field - поле варианта ('type' | 'voltage' | 'thread' | 'lever')
+	 * @returns массив уникальных значений, совместимых с текущим выбором
+	 */
 	const getCompatibleValues = (
 		field: 'type' | 'voltage' | 'thread' | 'lever'
 	) => {
 		if (!product?.variants) return [];
 
-		// Фильтруем варианты, которые соответствуют уже выбранным значениям
+		// Фильтруем варианты, которые совместимы с уже выбранными параметрами
 		return Array.from(
 			new Set(
 				product.variants
 					.filter(v => {
-						// Проверяем только заполненные поля
+						// Проверяем совместимость с уже выбранными параметрами (кроме текущего поля)
 						const threadMatch = !selectedThread || v.thread === selectedThread;
 						const voltageMatch =
 							!selectedVoltage || v.voltage === selectedVoltage;
 						const typeMatch = !selectedType || v.type === selectedType;
 						const leverMatch = !selectedLever || v.lever === selectedLever;
 
-						// Исключаем текущее поле из проверки
+						// В зависимости от текущего поля исключаем его из проверки
 						if (field === 'thread')
 							return voltageMatch && typeMatch && leverMatch;
 						if (field === 'voltage')
@@ -142,12 +141,16 @@ export default function ProductDetails() {
 		return !!actualVariant?.delivery && actualVariant.delivery.trim() !== '';
 	};
 
-	// Получение информации о доставке для текущего варианта
+	// Получение информации о доставке
 	const getDeliveryInfo = () => {
 		return actualVariant?.delivery || '';
 	};
 
-	// Функция для получения понятного названия типа
+	/**
+	 * Функция для преобразования кода типа в читаемое название
+	 * @param typeCode - код типа (например, "C", "E", "NC")
+	 * @returns читаемое название типа
+	 */
 	const getTypeName = (typeCode: string) => {
 		const typeMap: Record<string, string> = {
 			C: 'з закритим центром',
@@ -187,6 +190,7 @@ export default function ProductDetails() {
 		return typeMap[typeCode] || typeCode;
 	};
 
+	// Отображение индикатора загрузки
 	if (loading) {
 		return (
 			<View className='flex-1 justify-center items-center bg-primary'>
@@ -196,6 +200,7 @@ export default function ProductDetails() {
 		);
 	}
 
+	// Отображение ошибки
 	if (error) {
 		return (
 			<View className='flex-1 justify-center items-center bg-primary px-4'>
@@ -212,6 +217,7 @@ export default function ProductDetails() {
 		);
 	}
 
+	// Если продукт не найден
 	if (!product) {
 		return (
 			<View className='flex-1 justify-center items-center bg-primary'>
@@ -226,26 +232,21 @@ export default function ProductDetails() {
 		);
 	}
 
-	// Список совместимых значений
+	// Получаем списки совместимых значений для каждого параметра
 	const compatibleThreads = getCompatibleValues('thread');
 	const compatibleTypes = getCompatibleValues('type');
 	const compatibleVoltages = getCompatibleValues('voltage');
 	const compatibleLevers = getCompatibleValues('lever');
-	const hasFlow = actualVariant?.flow?.trim() !== '';
+	const hasFlow = (actualVariant?.flow ?? '').trim() !== '';
 
+	// Основной рендеринг компонента
 	return (
 		<View className='bg-primary flex-1'>
 			<ScrollView
 				contentContainerStyle={{ paddingBottom: 80 }}
 				showsVerticalScrollIndicator={false}
-				refreshControl={
-					<RefreshControl
-						refreshing={refreshing}
-						onRefresh={handleRefresh}
-						tintColor='#fff'
-					/>
-				}
 			>
+				{/* Блок с изображением продукта */}
 				<View className='relative'>
 					<Image
 						source={{
@@ -258,6 +259,7 @@ export default function ProductDetails() {
 						resizeMode='cover'
 						onError={() => setImageError(true)}
 					/>
+					{/* Кнопка "Назад" */}
 					<TouchableOpacity
 						className='absolute top-4 left-4 bg-black/50 p-2 rounded-full'
 						onPress={() => router.back()}
@@ -266,77 +268,149 @@ export default function ProductDetails() {
 					</TouchableOpacity>
 				</View>
 
+				{/* Основной контент */}
 				<View className='p-4'>
-					<Text className='text-white text-2xl font-bold mb-4'>
+					{/* Название продукта */}
+					<Text className='text-white text-xl font-bold mb-4'>
 						{product.name}
 					</Text>
 
-					{/* Блок цены и модели - переместили вверх для лучшего UX */}
+					{/* Блок с основной информацией о варианте */}
 					{actualVariant && (
-						<View className='mb-6 bg-gray-800/60 p-4 rounded-lg'>
-							<View className='flex-row justify-between items-center mb-2'>
-								<Text className='text-white text-base font-semibold'>
-									Модель:
-								</Text>
-								<Text className='text-white text-base'>
-									{actualVariant.model}
-								</Text>
+						<View className='mb-6 bg-gray-800/80 p-5 rounded-xl border border-gray-700 shadow-lg'>
+							{/* Список характеристик */}
+							<View className='space-y-3'>
+								{/* Модель */}
+								<View className='flex-row items-center'>
+									<Text className='text-gray-300 text-base font-medium flex-1'>
+										Модель
+									</Text> 
+									<Text className='text-white text-base font-semibold'>
+										{actualVariant.model}
+									</Text>
+								</View>
+
+								{/* Остальные характеристики с разделителями */}
+								{actualVariant?.type && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Тип клапана
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{getTypeName(actualVariant.type)}
+										</Text>
+									</View>
+								)}
+
+								{actualVariant?.lever && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Тип перемикача
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{getTypeName(actualVariant.lever)}
+										</Text>
+									</View>
+								)}
+
+								{hasFlow && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Витрати повітря
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{actualVariant?.flow}
+										</Text>
+									</View>
+								)}
+
+								{product?.num_lines && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Робочий тиск
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{product?.bar} bar
+										</Text>
+									</View>
+								)}
+
+								{product?.num_lines && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Число ліній/позицій
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{product?.num_lines}
+										</Text>
+									</View>
+								)}
+
+								{actualVariant?.productivity && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Продуктивність
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{actualVariant.productivity}
+										</Text>
+									</View>
+								)}
+
+								{actualVariant?.power && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Потужність
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{actualVariant.power}
+										</Text>
+									</View>
+								)}
+
+								{actualVariant?.pressure && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Тиск
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{actualVariant.pressure}
+										</Text>
+									</View>
+								)}
+
+								{actualVariant?.receiver && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Ресивер
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{actualVariant.receiver}
+										</Text>
+									</View>
+								)}
+
+								{actualVariant?.complete && (
+									<View className='flex-row items-center'>
+										<Text className='text-gray-300 text-base font-medium flex-1'>
+											Комплектація
+										</Text>
+										<Text className='text-white text-base font-semibold'>
+											{actualVariant.complete}
+										</Text>
+									</View>
+								)}
 							</View>
-							{actualVariant?.type && (
-								<View className='flex-row justify-between items-center mb-2'>
-									<Text className='text-white text-base font-semibold'>
-										Тип клапана:
+
+							{/* Цена */}
+							<View className='mt-5 pt-4 border-t border-gray-700 flex-row justify-between items-center'>
+								<Text className='text-white text-lg font-bold'>Цена</Text>
+								<View className='flex-row items-center'>
+									<Text className='text-2xl font-bold text-green-400 mr-1'>
+										{Number(actualVariant.price).toLocaleString('ru-RU')}
 									</Text>
-									<Text className='text-white text-base'>
-										{getTypeName(actualVariant.type)}
-									</Text>
+									<Text className='text-gray-400 text-sm'>грн</Text>
 								</View>
-							)}
-							{actualVariant?.lever && (
-								<View className='flex-row justify-between items-center mb-2'>
-									<Text className='text-white text-base font-semibold'>
-										Тип перемикача:
-									</Text>
-									<Text className='text-white text-base'>
-										{getTypeName(actualVariant.lever)}
-									</Text>
-								</View>
-							)}
-							{hasFlow && (
-								<View className='flex-row justify-between items-center mb-2'>
-									<Text className='text-white text-base font-semibold'>
-										Витрати повітря:
-									</Text>
-									<Text className='text-white text-base'>
-										{actualVariant?.flow}
-									</Text>
-								</View>
-							)}
-							{product?.num_lines && (
-								<View className='flex-row justify-between items-center mb-2'>
-									<Text className='text-white text-base font-semibold'>
-										Робочий тиск:
-									</Text>
-									<Text className='text-white text-base'>
-										{product?.bar} bar
-									</Text>
-								</View>
-							)}
-							{product?.num_lines && (
-								<View className='flex-row justify-between items-center mb-2'>
-									<Text className='text-white text-base font-semibold'>
-										Число ліній/позицій:
-									</Text>
-									<Text className='text-white text-base'>
-										{product?.num_lines}
-									</Text>
-								</View>
-							)}
-							<View className='flex-row justify-between items-center'>
-								<Text className='text-white text-xl font-semibold'>Цена:</Text>
-								<Text className='text-2xl font-bold text-green-400'>
-									{actualVariant.price} грн
-								</Text>
 							</View>
 						</View>
 					)}

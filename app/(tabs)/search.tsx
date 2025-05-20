@@ -1,9 +1,9 @@
-import ProductCard from '@/components/ProductCard'
-import SearchBar from '@/components/SearchBar'
-import { images } from '@/constants/images'
-import { supabase } from '@/utils/supabase'
-import useFetch from '@/utils/useFetch'
-import { useEffect, useState } from 'react'
+import ProductCard from '@/components/ProductCard';
+import SearchBar from '@/components/SearchBar';
+import { images } from '@/constants/images';
+import { fetchSearchProducts } from '@/utils/useDataFetch';
+import useFetch from '@/utils/useFetch';
+import { useEffect, useState } from 'react';
 import {
 	ActivityIndicator,
 	FlatList,
@@ -11,86 +11,76 @@ import {
 	ScrollView,
 	Text,
 	View,
-} from 'react-native'
+} from 'react-native';
 
 export default function Search() {
-	const [searchQuery, setSearchQuery] = useState('')
+	// Состояние для поискового запроса
+	const [searchQuery, setSearchQuery] = useState('');
 
-	const fetchSearchProducts = async () => {
-		const { data: distributors, error: error1 } = await supabase
-			.from('distributors_card')
-			.select('*')
-			.ilike('name', `%${searchQuery}%`)
-			.order('id', { ascending: true })
-
-		const { data: recomend, error: error2 } = await supabase
-			.from('recomend_card')
-			.select('*')
-			.ilike('name', `%${searchQuery}%`)
-			.order('id', { ascending: true })
-
-		if (error1 || error2) throw error1 || error2
-
-		const distributorsWithType = distributors?.map(item => ({
-			...item,
-			type: 'distributor',
-		}))
-		const recomendWithType = recomend?.map(item => ({
-			...item,
-			type: 'recomend',
-		}))
-
-		return [...(distributorsWithType || []), ...(recomendWithType || [])]
-	}
-
+	// Получение продуктов через кастомный хук useFetch
 	const {
 		data: products = null,
 		loading,
 		error,
 		reset,
 		refetch: loadingProducts,
-	} = useFetch(fetchSearchProducts)
+	} = useFetch(() => fetchSearchProducts(searchQuery));
 
+	// Эффект для отложенного поиска (debounce)
 	useEffect(() => {
 		const handleSearch = setTimeout(async () => {
 			if (searchQuery.trim()) {
-				await loadingProducts()
+				await loadingProducts(); // Загрузка продуктов при наличии запроса
 			} else {
-				reset()
+				reset(); // Сброс результатов при пустом запросе
 			}
-		}, 500)
+		}, 500); // Задержка 500мс
 
-		return () => clearTimeout(handleSearch)
-	}, [searchQuery])
+		return () => clearTimeout(handleSearch); // Очистка таймера при размонтировании
+	}, [searchQuery]);
 
 	return (
 		<View className='flex-1 bg-primary'>
+			{/* Основной контейнер с прокруткой */}
 			<ScrollView
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ minHeight: '100%', paddingBottom: 10 }}
 			>
+				{/* Фоновое изображение */}
 				<Image source={images.bg} className='absolute w-full z-0' />
+
+				{/* Список товаров */}
 				<FlatList
 					data={products}
 					renderItem={({ item }) =>
-						searchQuery.trim() ? <ProductCard {...item} /> : null
+						searchQuery.trim() ? ( // Рендерим карточки только при наличии запроса
+							<ProductCard
+								{...item}
+								group_table={item.group_table}
+								table={item.table} // Передаем данные о таблице для навигации
+							/>
+						) : null
 					}
-					keyExtractor={item => `${item.type}-${item.id}`}
-					numColumns={2}
+					// Уникальный ключ с учетом типа таблицы и ID
+					keyExtractor={item => `${item.table || item.group_table}-${item.id}`}
+					numColumns={2} // Две колонки
 					columnWrapperStyle={{
 						justifyContent: 'center',
 						gap: 20,
 						marginVertical: 10,
 					}}
 					className='px-5'
-					scrollEnabled={false}
+					scrollEnabled={false} // Отключаем скролл (используем внешний ScrollView)
 					contentContainerStyle={{ paddingBottom: 100 }}
+					// Заголовок списка
 					ListHeaderComponent={
 						<>
+							{/* Логотип */}
 							<View className='flex-full flex-row items-center justify-center mt-14'>
 								<Image source={images.logo} className='w-[100px] h-[100px]' />
 							</View>
 
+							{/* Поле поиска */}
 							<View className='my-5'>
 								<SearchBar
 									placeholder='Пошук пристрою...'
@@ -99,14 +89,17 @@ export default function Search() {
 								/>
 							</View>
 
+							{/* Индикатор загрузки */}
 							{loading && <ActivityIndicator size={'large'} color='#0000ff' />}
 
+							{/* Сообщение об ошибке */}
 							{error && (
 								<Text className='text-red-500 px-5 my-3'>
 									ERROR: {error.message}
 								</Text>
 							)}
 
+							{/* Заголовок результатов поиска */}
 							{!loading &&
 								!error &&
 								searchQuery.trim() &&
@@ -122,5 +115,5 @@ export default function Search() {
 				/>
 			</ScrollView>
 		</View>
-	)
+	);
 }

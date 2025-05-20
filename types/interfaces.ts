@@ -20,4 +20,44 @@ export interface Variant {
   lever: string;
   delivery?: string;
   flow?: string;
+	productivity?: string;
+	power?: string;
+	pressure?: string;
+	receiver?: string;
+	complete?: string;
+}
+
+export interface GroupItem {
+	id: string;
+	name: string;
+	img_url: string;
+}
+
+export interface GroupItem {
+	id: string;
+	name: string;
+	img_url: string;
+}
+
+export interface CategoryContentProps {
+	loading: boolean;
+	error: string | null;
+	selectedGroup: string | null;
+	groups: Array<{ id: string; name: string; img_url: string }>;
+	products: Product[];
+	onGroupPress: (id: string | null) => void;
+	onRetry: () => void;
+}
+
+export interface Props {
+	group: GroupItem;
+	isSelected?: boolean;
+	onPress?: () => void;
+}
+
+export interface CategoryHeaderProps {
+	selectedGroup: string | null;
+	category: string;
+	groups: Array<{ id: string; name: string }>;
+	onBackPress: () => void;
 }

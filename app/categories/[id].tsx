@@ -1,128 +1,125 @@
-import GroupCard from '@/components/GroupCard';
-import ProductCard from '@/components/ProductCard';
-import { Product } from '@/types/interfaces';
-import {
-	fetchCategoryById,
-	fetchGroupById,
-	fetchProductsByGroupIds,
-} from '@/utils/useDataFetch';
+import { useCallback, useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { CategoryHeader } from '@/components/CategoryHeader';
+import { CategoryContent } from '@/components/CategoryContent';
+import { GroupItem, Product } from '@/types/interfaces';
 import {
-	ActivityIndicator,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	View,
-} from 'react-native';
-
-interface GroupItem {
-	id: string;
-	name: string;
-	img_url: string;
-}
+  fetchCategoryById,
+  fetchGroupById,
+  fetchProductsByGroup,
+} from '@/utils/useDataFetch';
 
 export default function Category() {
-	const router = useRouter();
-	const { id } = useLocalSearchParams();
-console.log(id);
-	const [groups, setGroups] = useState<GroupItem[]>([]);
-	const [products, setProducts] = useState<Product[]>([]);
-	const [category, setCategory] = useState('');
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+  // Навигация и параметры
+  const router = useRouter();
+  const { id } = useLocalSearchParams();
+  // Обработка случая, когда id может быть массивом
+  const categoryId = Array.isArray(id) ? id[0] : id;
 
-	const fetchGroupsAndProducts = async () => {
-		try {
-			setLoading(true);
-			setError(null);
+  // Состояния компонента
+  const [groups, setGroups] = useState<GroupItem[]>([]); // Список групп категории
+  const [products, setProducts] = useState<Product[]>([]); // Список товаров
+  const [category, setCategory] = useState(''); // Название категории
+  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [error, setError] = useState<string | null>(null); // Ошибки
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null); // Выбранная группа
+  const [groupTable, setGroupTable] = useState<string | null>(null); // Таблица группы
 
-			const groupsData = await fetchGroupById(id.toString());
-			const categoryData = await fetchCategoryById(id.toString());
+  // Загрузка данных категории и групп
+  const fetchGroupsAndProducts = useCallback(async () => {
+    if (!categoryId) {
+      setError('ID категории не указан');
+      setLoading(false);
+      return;
+    }
 
-			setGroups(groupsData);
-			setCategory(categoryData);
+    try {
+      setLoading(true);
+      setError(null);
 
-			const groupIds = groupsData.map((group: GroupItem) => group.id);
-			const productsData = await fetchProductsByGroupIds(groupIds);
-			setProducts(productsData);
-		} catch (err: any) {
-			setError(err.message || 'Ошибка загрузки данных');
-			console.error('Error fetching groups or products:', err);
-		} finally {
-			setLoading(false);
-		}
-	};
+      // 1. Получаем название категории
+      const categoryName = await fetchCategoryById(categoryId);
+      setCategory(categoryName);
 
-	useEffect(() => {
-		if (id) {
-			fetchGroupsAndProducts();
-		} else {
-			setError('ID категории не указан');
-			setLoading(false);
-		}
-	}, [id]);
+      // 2. Получаем группы категории
+      const groupsResult = await fetchGroupById(categoryId);
+      setGroups(groupsResult.data);
+      setGroupTable(groupsResult.table); // Сохраняем таблицу для последующих запросов
 
-	return (
-		<View className='flex-1 bg-gray-900'>
-			{loading || error || groups.length === 0 ? (
-				<View className='flex-1 p-2'>
-					{loading ? (
-						<View className='flex-1 justify-center items-center'>
-							<ActivityIndicator size='large' color='#3B82F6' />
-							<Text className='text-white mt-4'>Загрузка...</Text>
-						</View>
-					) : error ? (
-						<View className='flex-1 justify-center items-center'>
-							<Text className='text-red-400 text-lg mb-4'>{error}</Text>
-							<TouchableOpacity
-								className='bg-blue-600 px-6 py-3 rounded-full'
-								onPress={fetchGroupsAndProducts}
-							>
-								<Text className='text-white font-semibold'>Повторить</Text>
-							</TouchableOpacity>
-						</View>
-					) : (
-						<View className='flex-1 justify-center items-center'>
-							<Text className='text-gray-400 text-lg'>
-								В этой категории пока нет групп
-							</Text>
-						</View>
-					)}
-				</View>
-			) : (
-				<ScrollView
-					contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-					showsVerticalScrollIndicator={false}
-				>
-					<View className='flex-row items-center justify-center pt-12 pb-6 bg-gray-900 shadow-lg relative'>
-						<TouchableOpacity
-							onPress={() => router.back()}
-							className='absolute left-4 top-9 bg-black/60 p-3 rounded-full shadow-md'
-							activeOpacity={0.7}
-						>
-							<Text className='text-white text-xl font-bold'>←</Text>
-						</TouchableOpacity>
+      // 3. Если есть таблица - загружаем товары
+      if (groupsResult.table) {
+        const productData = await fetchProductsByGroup(groupsResult.table);
+        setProducts(productData);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Ошибка загрузки данных');
+    } finally {
+      setLoading(false);
+    }
+  }, [categoryId]);
 
-						<Text className='text-white text-xl font-bold text-center'>
-							{category || 'Категория'}
-						</Text>
-					</View>
-					{/* Список групп */}
-					<View className='space-y-4'>
-						{groups.map(group => (
-							<GroupCard key={group.id} group={group} />
-						))}
-					</View>
+  // Загрузка товаров для выбранной группы
+  const fetchProducts = useCallback(async () => {
+    if (groupTable) {
+      try {
+        // Загружаем товары с фильтрацией по группе (если выбрана)
+        const productData = await fetchProductsByGroup(
+          groupTable,
+          selectedGroup || undefined
+        );
+        setProducts(productData);
+      } catch (err) {
+        setError('Не удалось загрузить товары');
+      }
+    }
+  }, [groupTable, selectedGroup]);
 
-					{/* Сетка товаров */}
-					<View className='flex-row flex-wrap justify-center mt-8 gap-5'>
-						{products.map(prod => (
-							<ProductCard {...prod} />
-						))}
-					</View>
-				</ScrollView>
-			)}
-		</View>
-	);
+  // Первоначальная загрузка данных при монтировании
+  useEffect(() => {
+    fetchGroupsAndProducts();
+  }, [fetchGroupsAndProducts]);
+
+  // Обновление товаров при изменении группы
+  useEffect(() => {
+    if (groupTable) {
+      fetchProducts();
+    }
+  }, [groupTable, selectedGroup, fetchProducts]);
+
+  // Обработчик кнопки "назад"
+  const handleBackPress = () => {
+    if (selectedGroup) {
+      // Если выбрана группа - сбрасываем выбор
+      setSelectedGroup(null);
+    } else {
+      // Иначе - возвращаемся на предыдущий экран
+      router.back();
+    }
+  };
+
+  return (
+    <View className='flex-1 bg-gray-900'>
+      {/* Шапка категории */}
+      <CategoryHeader
+        selectedGroup={selectedGroup}
+        category={category}
+        groups={groups}
+        onBackPress={handleBackPress}
+      />
+      
+      {/* Основное содержимое */}
+      <View className='flex-1 p-2'>
+        <CategoryContent
+          loading={loading}
+          error={error}
+          selectedGroup={selectedGroup}
+          groups={groups}
+          products={products}
+          onGroupPress={setSelectedGroup} // Обработчик выбора группы
+          onRetry={fetchGroupsAndProducts} // Повторная попытка загрузки
+        />
+      </View>
+    </View>
+  );
 }
