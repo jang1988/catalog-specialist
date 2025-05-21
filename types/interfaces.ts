@@ -25,6 +25,11 @@ export interface Variant {
 	pressure?: string;
 	receiver?: string;
 	complete?: string;
+	thread_pt?: string;
+	filter_element?: string;
+	size?: string;
+	bar_value?: string;
+	filtration?: string;
 }
 
 export interface GroupItem {
@@ -33,10 +38,9 @@ export interface GroupItem {
 	img_url: string;
 }
 
-export interface GroupItem {
-	id: string;
-	name: string;
-	img_url: string;
+export interface GroupResponse {
+  data: GroupItem[];
+  table: string | null;
 }
 
 export interface CategoryContentProps {

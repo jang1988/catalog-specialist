@@ -10,7 +10,7 @@ import { fetchCategories, fetchRecomends } from '@/utils/useDataFetch';
 import useFetch from '@/utils/useFetch';
 
 // Секции главного экрана
-import CategoriesSection from '@/components/CategoriesSection';
+import CategoriesSection from '@/components/category/CategoriesSection';
 import HeaderLogo from '@/components/HeaderLogo';
 import RecommendsSection from '@/components/RecommendsSection';
 

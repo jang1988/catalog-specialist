@@ -1,3 +1,4 @@
+import { GroupResponse, Product } from '@/types/interfaces';
 import { supabase } from '@/utils/supabase';
 
 /**
@@ -5,7 +6,9 @@ import { supabase } from '@/utils/supabase';
  * @param {string} search - Строка поиска для фильтрации категорий по имени.
  * @returns {Promise<array>} - Массив категорий, соответствующих критериям поиска.
  */
-export const fetchCategories = async (search = '') => {
+export const fetchCategories = async (
+	search: string = ''
+): Promise<Array<any>> => {
 	try {
 		// Запрос к таблице категорий с фильтрацией по имени и сортировкой по ID
 		const { data, error } = await supabase
@@ -27,7 +30,7 @@ export const fetchCategories = async (search = '') => {
  * @param {string} id - Идентификатор категории.
  * @returns {Promise<string>} - Название категории.
  */
-export const fetchCategoryById = async (id: string) => {
+export const fetchCategoryById = async (id: string): Promise<string> => {
 	if (!id) throw new Error('ID категории не указан');
 
 	try {
@@ -53,7 +56,9 @@ export const fetchCategoryById = async (id: string) => {
  * @param {string} search - Строка поиска для фильтрации по имени.
  * @returns {Promise<array>} - Массив рекомендуемых товаров.
  */
-export const fetchRecomends = async (search = '') => {
+export const fetchRecomends = async (
+	search: string = ''
+): Promise<Array<any>> => {
 	try {
 		// Запрос к таблице рекомендуемых товаров с фильтрацией и сортировкой
 		const { data, error } = await supabase
@@ -75,7 +80,9 @@ export const fetchRecomends = async (search = '') => {
  * @param {string} search - Строка поиска для фильтрации по имени.
  * @returns {Promise<array>} - Массив дистрибьюторов.
  */
-export const fetchDistributors = async (search = '') => {
+export const fetchDistributors = async (
+	search: string = ''
+): Promise<Array<any>> => {
 	try {
 		// Запрос к таблице дистрибьюторов с фильтрацией и сортировкой
 		const { data, error } = await supabase
@@ -98,33 +105,40 @@ export const fetchDistributors = async (search = '') => {
  * @param {string} table - Имя таблицы для поиска (опционально).
  * @returns {Promise<object>} - Данные о товаре.
  */
-export const fetchProductById = async (id: string, table?: string) => {
-  try {
-    // Определяем таблицу для запроса на основе переданного параметра
-    let tableName = 'distributors_card'; // Таблица по умолчанию
-    
-    // Проверяем, указана ли допустимая таблица в параметре
-    if (table) {
-      if (table === 'compressors' || table === 'compressors_card') {
-        tableName = 'compressors_card';
-      } else if (table === 'distributors' || table === 'distributors_card') {
-        tableName = 'distributors_card';
-      }
-    }
-    
-    // Запрос к выбранной таблице для получения данных о товаре по ID
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('id', id) // Фильтрация по точному совпадению ID
-      .single(); // Ожидаем один результат
+export const fetchProductById = async (
+	id: string,
+	table?: string
+): Promise<Product> => {
+	try {
+		// Определяем таблицу для запроса на основе переданного параметра
+		let tableName = 'distributors_card'; // Таблица по умолчанию
 
-    if (error) throw error;
-    return data;
-  } catch (err) {
-    console.error('Помилка при завантаженні товару:', err);
-    throw new Error('Не вдалося завантажити товар');
-  }
+		// Проверяем, указана ли допустимая таблица в параметре
+		if (table) {
+			if (table === 'compressors' || table === 'compressors_card') {
+				tableName = 'compressors_card';
+			} else if (table === 'distributors' || table === 'distributors_card') {
+				tableName = 'distributors_card';
+			} else if (table === 'mainline' || table === 'mainline_card') {
+				tableName = 'mainline_card';
+			} else if (table === 'air' || table === 'air_preparation_card') {
+				tableName = 'air_preparation_card';
+			}
+		}
+
+		// Запрос к выбранной таблице для получения данных о товаре по ID
+		const { data, error } = await supabase
+			.from(tableName)
+			.select('*')
+			.eq('id', id) // Фильтрация по точному совпадению ID
+			.single(); // Ожидаем один результат
+
+		if (error) throw error;
+		return data;
+	} catch (err) {
+		console.error('Помилка при завантаженні товару:', err);
+		throw new Error('Не вдалося завантажити товар');
+	}
 };
 
 /**
@@ -150,7 +164,7 @@ const GROUP_TABLES = [
  * @param {string} id - Идентификатор категории.
  * @returns {Promise<object>} - Объект с данными о группах и именем таблицы.
  */
-export const fetchGroupById = async (id: string) => {
+export const fetchGroupById = async (id: string): Promise<GroupResponse> => {
 	if (!id) throw new Error('ID категории не указан');
 
 	// Ищем первую таблицу, которая содержит группы для этой категории
@@ -183,53 +197,96 @@ export const fetchGroupById = async (id: string) => {
  * @param {string} groupId - Идентификатор группы (опционально).
  * @returns {Promise<array>} - Объединенный массив товаров из обеих таблиц.
  */
-export const fetchProductsByGroup = async (table: string, groupId?: string) => {
-  if (!table) throw new Error('Имя группы не указано');
+export const fetchProductsByGroup = async (
+	table: string,
+	groupId?: string
+): Promise<Array<any>> => {
+	if (!table) throw new Error('Имя группы не указано');
 
-  try {
-    // Создаем запросы для обеих таблиц
-    const queryDistributors = supabase
-      .from('distributors_card')
-      .select('*')
-      .eq('group_table', table); // Фильтрация по имени таблицы группы
+	try {
+		// Создаем запросы для обеих таблиц
+		const queryDistributors = supabase
+			.from('distributors_card')
+			.select('*')
+			.eq('group_table', table); // Фильтрация по имени таблицы группы
 
-    const queryCompressors = supabase
-      .from('compressors_card')
-      .select('*')
-      .eq('group_table', table); // Фильтрация по имени таблицы группы
+		const queryCompressors = supabase
+			.from('compressors_card')
+			.select('*')
+			.eq('group_table', table); // Фильтрация по имени таблицы группы
 
-    // Добавляем фильтр по group_id, если он указан
-    if (groupId) {
-      queryDistributors.eq('group', groupId);
-      queryCompressors.eq('group', groupId);
-    }
+		const queryMainline = supabase
+			.from('mainline_card')
+			.select('*')
+			.eq('group_table', table);
 
-    // Выполняем оба запроса параллельно для оптимизации времени
-    const [distributorsResult, compressorsResult] = await Promise.all([
-      queryDistributors,
-      queryCompressors
-    ]);
+		const queryAirPreparation = supabase
+			.from('air_preparation_card')
+			.select('*')
+			.eq('group_table', table);
 
-    if (distributorsResult.error) throw distributorsResult.error;
-    if (compressorsResult.error) throw compressorsResult.error;
+		// Добавляем фильтр по group_id, если он указан
+		if (groupId) {
+			queryDistributors.eq('group', groupId);
+			queryCompressors.eq('group', groupId);
+			queryMainline.eq('group', groupId);
+			queryAirPreparation.eq('group', groupId);
+		}
 
-    // Добавляем информацию о таблице к каждому товару для последующей идентификации
-    const distributorProducts = (distributorsResult.data || []).map(product => ({
-      ...product,
-      table: 'distributors_card' // Добавляем метку таблицы
-    }));
-    
-    const compressorProducts = (compressorsResult.data || []).map(product => ({
-      ...product,
-      table: 'compressors_card' // Добавляем метку таблицы
-    }));
+		// Выполняем оба запроса параллельно для оптимизации времени
+		const [
+			distributorsResult,
+			compressorsResult,
+			mainlineResult,
+			airPreparationResult,
+		] = await Promise.all([
+			queryDistributors,
+			queryCompressors,
+			queryMainline,
+			queryAirPreparation,
+		]);
 
-    // Объединяем результаты из обеих таблиц в один массив
-    return [...distributorProducts, ...compressorProducts];
-  } catch (err) {
-    console.error(`Ошибка при загрузке товаров для группы ${table}:`, err);
-    throw new Error('Не удалось загрузить товары для данной группы');
-  }
+		if (distributorsResult.error) throw distributorsResult.error;
+		if (compressorsResult.error) throw compressorsResult.error;
+		if (mainlineResult.error) throw mainlineResult.error;
+		if (airPreparationResult.error) throw airPreparationResult.error;
+
+		// Добавляем информацию о таблице к каждому товару для последующей идентификации
+		const distributorProducts = (distributorsResult.data || []).map(
+			product => ({
+				...product,
+				table: 'distributors_card', // Добавляем метку таблицы
+			})
+		);
+
+		const compressorProducts = (compressorsResult.data || []).map(product => ({
+			...product,
+			table: 'compressors_card', // Добавляем метку таблицы
+		}));
+
+		const mainlineProducts = (mainlineResult.data || []).map(product => ({
+			...product,
+			table: 'mainline_card',
+		}));
+
+		const airPreparationProducts = (airPreparationResult.data || []).map(
+			product => ({
+				...product,
+				table: 'air_preparation_card',
+			})
+		);
+
+		// Объединяем результаты из обеих таблиц в один массив
+		return [
+			...distributorProducts,
+			...compressorProducts,
+			...mainlineProducts,
+			...airPreparationProducts,
+		];
+	} catch (err) {
+		console.error(`Ошибка при загрузке товаров для группы ${table}:`, err);
+		throw new Error('Не удалось загрузить товары для данной группы');
+	}
 };
 
 /**
@@ -238,28 +295,47 @@ export const fetchProductsByGroup = async (table: string, groupId?: string) => {
  * @param {string} query - Поисковый запрос.
  * @returns {Promise<array>} - Объединенный массив найденных товаров.
  */
-export const fetchSearchProducts = async (query: string) => {
-  try {
-    // Выполняем поиск в обеих таблицах параллельно
-    const [distributors, compressors] = await Promise.all([
-      supabase
-        .from('distributors_card')
-        .select('*')
-        .ilike('name', `%${query}%`), // Поиск с игнорированием регистра по имени товара
-      supabase
-        .from('compressors_card')
-        .select('*')
-        .ilike('name', `%${query}%`) // Поиск с игнорированием регистра по имени товара
-    ]);
+export const fetchSearchProducts = async (
+	query: string
+): Promise<Array<any>> => {
+	try {
+		// Выполняем поиск в трёх таблицах параллельно
+		const [distributors, compressors, mainlines, airPreparation] =
+			await Promise.all([
+				supabase
+					.from('distributors_card')
+					.select('*')
+					.ilike('name', `%${query}%`), // Поиск по таблице дистрибьюторов
+				supabase
+					.from('compressors_card')
+					.select('*')
+					.ilike('name', `%${query}%`), // Поиск по таблице компрессоров
+				supabase.from('mainline_card').select('*').ilike('name', `%${query}%`), // Поиск по новой таблице магистралей
+				supabase
+					.from('air_preparation_card')
+					.select('*')
+					.ilike('name', `%${query}%`),
+			]);
 
-    // Добавляем информацию о таблице к каждому найденному товару
-    const distributorProducts = distributors.data?.map(p => ({ ...p, table: 'distributors' })) || [];
-    const compressorProducts = compressors.data?.map(p => ({ ...p, table: 'compressors' })) || [];
+		// Добавляем информацию о таблице к каждому найденному товару
+		const distributorProducts =
+			distributors.data?.map(p => ({ ...p, table: 'distributors' })) || [];
+		const compressorProducts =
+			compressors.data?.map(p => ({ ...p, table: 'compressors' })) || [];
+		const mainlineProducts =
+			mainlines.data?.map(p => ({ ...p, table: 'mainlines' })) || [];
+		const airPreparationProducts =
+			airPreparation.data?.map(p => ({ ...p, table: 'air' })) || [];
 
-    // Объединяем результаты из обеих таблиц
-    return [...distributorProducts, ...compressorProducts];
-  } catch (err) {
-    console.error('Ошибка при поиске товаров:', err);
-    throw new Error('Не удалось выполнить поиск');
-  }
+		// Объединяем результаты из всех трёх таблиц
+		return [
+			...distributorProducts,
+			...compressorProducts,
+			...mainlineProducts,
+			...airPreparationProducts,
+		];
+	} catch (err) {
+		console.error('Ошибка при поиске товаров:', err);
+		throw new Error('Не удалось выполнить поиск');
+	}
 };

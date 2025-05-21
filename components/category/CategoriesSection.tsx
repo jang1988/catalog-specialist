@@ -1,6 +1,6 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import CategoryCard from '@/components/CategoryCard';
+import CategoryCard from '@/components/category/CategoryCard';
 
 export default function CategoriesSection({
 	data,

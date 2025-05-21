@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CategoryHeader } from '@/components/CategoryHeader';
-import { CategoryContent } from '@/components/CategoryContent';
+import { CategoryHeader } from '@/components/category/CategoryHeader';
+import { CategoryContent } from '@/components/category/CategoryContent';
 import { GroupItem, Product } from '@/types/interfaces';
 import {
   fetchCategoryById,
