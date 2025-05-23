@@ -1,24 +1,18 @@
 import { Product, Variant } from '@/types/interfaces';
 import { fetchProductById } from '@/utils/useDataFetch';
-import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
-/**
- * Custom hook to handle the product details logic
- * @param id - Product ID
- * @param table - Table name where the product is stored
- */
 export function useProductDetails(
 	id: string | string[],
 	table?: string | string[]
 ) {
-	// State for product data and UI management
+	// ── Дані продукту ───────────────────────────────────────────
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [imageError, setImageError] = useState(false);
 
-	// State for selected variant parameters
+	// ── Вибрані поля ────────────────────────────────────────────
 	const [selectedVoltage, setSelectedVoltage] = useState('');
 	const [selectedType, setSelectedType] = useState('');
 	const [selectedLever, setSelectedLever] = useState('');
@@ -27,86 +21,105 @@ export function useProductDetails(
 	const [selectedSize, setSelectedSize] = useState('');
 	const [selectedBarValue, setSelectedBarValue] = useState('');
 	const [selectedFiltration, setSelectedFiltration] = useState('');
+	const [selectedSignalType, setSelectedSignalType] = useState('');
+	const [selectedPistonDiameter, setSelectedPistonDiameter] = useState('');
+	const [selectedStrokeLength, setSelectedStrokeLength] = useState('');
+	const [selectedStock, setSelectedStock] = useState('');
+	const [selectedMagnet, setSelectedMagnet] = useState('');
 
-	// Current active variant (based on selected parameters)
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
 
-	// Effect for loading product data on mount
+	// ── Завантаження продукту ────────────────────────────────────
 	useEffect(() => {
-		const fetchData = async () => {
+		const normalizedId = Array.isArray(id) ? id[0] : id;
+		const normalizedTable = table
+			? Array.isArray(table)
+				? table[0]
+				: table
+			: undefined;
+
+		async function fetchData() {
 			try {
-				// Request product data by ID and table
-				const data = await fetchProductById(id.toString(), table?.toString());
+				const data = await fetchProductById(normalizedId, normalizedTable);
 				setProduct(data);
 
-				// If there are variants, set the first one as default
-				if (data.variants && data.variants.length > 0) {
-					const defaultVariant = data.variants[0];
-					setSelectedVoltage(defaultVariant.voltage || '');
-					setSelectedType(defaultVariant.type || '');
-					setSelectedThread(defaultVariant.thread || '');
-					setSelectedLever(defaultVariant.lever || '');
-					setSelectedFilterElement(defaultVariant.filter_element || '');
-					setSelectedSize(defaultVariant.size || '');
-					setSelectedBarValue(defaultVariant.bar_value || '');
-					setSelectedFiltration(defaultVariant.filtration || '');
-					setActualVariant(defaultVariant);
+				if (data.variants?.length) {
+					// початковий thread
+					const threads = Array.from(
+						new Set(data.variants.map(v => v.thread || ''))
+					).filter(t => t);
+					const initialThread = threads[0] || '';
+					setSelectedThread(prev => prev || initialThread);
 				}
 			} catch (err: any) {
 				setError(err.message || 'Помилка завантаження');
 			} finally {
 				setLoading(false);
 			}
-		};
+		}
 
-		if (id) {
+		if (normalizedId) {
 			setLoading(true);
 			fetchData();
 		} else {
 			setError('ID товару не вказано');
 			setLoading(false);
 		}
-	}, [id]);
+	}, [id, table]);
 
-	// Effect for filtering variants when selected parameters change
-	useEffect(() => {
-		if (!product?.variants) return;
+	// ── Мемоізоване обчислення відповідного варіанту ────────────
+	const computedVariant = useMemo<Variant | null>(() => {
+		if (!product?.variants?.length) return null;
 
-		// Find variant matching selected parameters
-		const found = product.variants.find(
-			v =>
-				(selectedVoltage === '' || v.voltage === selectedVoltage) &&
-				(selectedType === '' || v.type === selectedType) &&
-				(selectedThread === '' || v.thread === selectedThread) &&
-				(selectedLever === '' || v.lever === selectedLever) &&
-				(selectedFilterElement === '' ||
-					v.filter_element === selectedFilterElement) &&
-				(selectedSize === '' || v.size === selectedSize) &&
-				(selectedBarValue === '' || v.bar_value === selectedBarValue) &&
-				(selectedFiltration === '' || v.filtration === selectedFiltration)
-		);
+		// Создаем массив критериев для поиска (в порядке приоритета)
+		const searchCriteria = {
+			voltage: selectedVoltage,
+			type: selectedType,
+			thread: selectedThread,
+			lever: selectedLever,
+			filter_element: selectedFilterElement,
+			size: selectedSize,
+			bar_value: selectedBarValue,
+			filtration: selectedFiltration,
+			signal_type: selectedSignalType,
+			piston_diameter: selectedPistonDiameter,
+			stroke_length: selectedStrokeLength,
+			stock: selectedStock,
+			magnet: selectedMagnet,
+		};
 
-		setActualVariant(found ?? null);
+		// Функция для проверки соответствия варианта критериям
+		const matchesCriteria = (variant: Variant, criteria: any) => {
+			return Object.entries(criteria).every(([key, value]) => {
+				if (value === '') return true; // пустое значение означает "любое"
+				return variant[key as keyof Variant] === value;
+			});
+		};
 
-		// Show warning if parameter combination is unavailable
-		if (
-			!found &&
-			selectedVoltage &&
-			selectedType &&
-			selectedThread &&
-			selectedLever &&
-			selectedFilterElement &&
-			selectedSize &&
-			selectedBarValue &&
-			selectedFiltration
-		) {
-			Alert.alert(
-				'Увага',
-				'Вибрана комбінація недоступна. Будь ласка, виберіть інші параметри.',
-				[{ text: 'OK' }]
+		// 1. Сначала ищем точное совпадение
+		let found = product.variants.find(v => matchesCriteria(v, searchCriteria));
+		if (found) return found;
+
+		// 2. Если точного совпадения нет и выбран piston_diameter,
+		// ищем вариант с подходящим piston_diameter и любым stroke_length
+		if (selectedPistonDiameter) {
+			const criteriaWithoutStroke = { ...searchCriteria, stroke_length: '' };
+			found = product.variants.find(v =>
+				matchesCriteria(v, criteriaWithoutStroke)
 			);
+			if (found) return found;
 		}
+
+		// 3. Приоритизируем поиск по thread (если он выбран)
+		if (selectedThread) {
+			found = product.variants.find(v => v.thread === selectedThread);
+			if (found) return found;
+		}
+
+		// 4. Если и по thread ничего не найдено, возвращаем первый доступный вариант
+		return product.variants[0] || null;
 	}, [
+		product?.variants,
 		selectedVoltage,
 		selectedType,
 		selectedThread,
@@ -115,56 +128,94 @@ export function useProductDetails(
 		selectedSize,
 		selectedBarValue,
 		selectedFiltration,
-		product,
+		selectedSignalType,
+		selectedPistonDiameter,
+		selectedStrokeLength,
+		selectedStock,
+		selectedMagnet,
 	]);
 
-	/**
-	 * Function to get compatible values for a specific field
-	 * @param field - variant field ('type' | 'voltage' | 'thread' | 'lever' | 'filter_element' | 'size')
-	 * @returns array of unique values compatible with current selection
-	 */
-	const getCompatibleValues = (
-  field: keyof Variant
-): string[] => {
-  if (!product?.variants) return [];
+	// ── Синхронне оновлення state перед відмалюванням ─────────────
+	useLayoutEffect(() => {
+		if (!computedVariant) {
+			setActualVariant(null);
+			return;
+		}
 
-  return Array.from(new Set(
-    product.variants
-      .filter(v => {
-        return Object.entries({
-          voltage: selectedVoltage,
-          type: selectedType,
-          thread: selectedThread,
-          lever: selectedLever,
-          filter_element: selectedFilterElement,
-          size: selectedSize,
-          bar_value: selectedBarValue,
-          filtration: selectedFiltration,
-        }).every(([key, val]) =>
-          key === field || val === '' || v[key as keyof Variant] === val
-        );
-      })
-      .map(v => v[field] ?? '')
-      .filter(val => val && val.trim() !== '')
-  ));
-};
+		setActualVariant(computedVariant);
 
-	// Check if delivery info is available for current variant
-	const hasDeliveryInfo = () => {
-		return !!actualVariant?.delivery && actualVariant.delivery.trim() !== '';
+		// обновляем значения только если они отличаются
+		if (computedVariant.voltage !== selectedVoltage)
+			setSelectedVoltage(computedVariant.voltage || '');
+		if (computedVariant.type !== selectedType)
+			setSelectedType(computedVariant.type || '');
+		if (computedVariant.lever !== selectedLever)
+			setSelectedLever(computedVariant.lever || '');
+		if (computedVariant.filter_element !== selectedFilterElement)
+			setSelectedFilterElement(computedVariant.filter_element || '');
+		if (computedVariant.size !== selectedSize)
+			setSelectedSize(computedVariant.size || '');
+		if (computedVariant.bar_value !== selectedBarValue)
+			setSelectedBarValue(computedVariant.bar_value || '');
+		if (computedVariant.filtration !== selectedFiltration)
+			setSelectedFiltration(computedVariant.filtration || '');
+		if (computedVariant.signal_type !== selectedSignalType)
+			setSelectedSignalType(computedVariant.signal_type || '');
+		if (computedVariant.piston_diameter !== selectedPistonDiameter)
+			setSelectedPistonDiameter(computedVariant.piston_diameter || '');
+		if (computedVariant.stroke_length !== selectedStrokeLength)
+			setSelectedStrokeLength(computedVariant.stroke_length || '');
+		if (computedVariant.stock !== selectedStock)
+			setSelectedStock(computedVariant.stock || '');
+		if (computedVariant.magnet !== selectedMagnet)
+			setSelectedMagnet(computedVariant.magnet || '');
+	}, [computedVariant]);
+
+	// ── Допоміжні методи ─────────────────────────────────────────
+	const getCompatibleValues = <K extends keyof Variant>(field: K): string[] => {
+		if (!product?.variants) return [];
+		const alwaysShowAll = ['thread', 'piston_diameter'];
+
+		if (alwaysShowAll.includes(field as string)) {
+			return Array.from(
+				new Set(product.variants.map(v => v[field] || '').filter(Boolean))
+			);
+		}
+		return Array.from(
+			new Set(
+				product.variants
+					.filter(v =>
+						Object.entries({
+							voltage: selectedVoltage,
+							type: selectedType,
+							thread: selectedThread,
+							lever: selectedLever,
+							filter_element: selectedFilterElement,
+							size: selectedSize,
+							bar_value: selectedBarValue,
+							filtration: selectedFiltration,
+							signal_type: selectedSignalType,
+							piston_diameter: selectedPistonDiameter,
+							stroke_length: selectedStrokeLength,
+							stock: selectedStock,
+							magnet: selectedMagnet,
+						}).every(
+							([key, val]) =>
+								key === field || val === '' || v[key as keyof Variant] === val
+						)
+					)
+					.map(v => v[field] || '')
+					.filter(Boolean)
+			)
+		);
 	};
 
-	// Get delivery info
-	const getDeliveryInfo = () => {
-		return actualVariant?.delivery || '';
-	};
+	const hasDeliveryInfo = () => Boolean(actualVariant?.delivery?.trim());
+	const getDeliveryInfo = () => actualVariant?.delivery || '';
+	const hasFlow = () => Boolean(actualVariant?.flow?.trim());
 
-	/**
-	 * Function to convert type code to readable name
-	 * @param typeCode - type code (e.g., "C", "E", "NC")
-	 * @returns readable type name
-	 */
 	const getTypeName = (typeCode: string) => {
+		// можна винести цей словник в окремий файл
 		const typeMap: Record<string, string> = {
 			C: 'з закритим центром',
 			E: 'з відкритим центром',
@@ -203,11 +254,7 @@ export function useProductDetails(
 		return typeMap[typeCode] || typeCode;
 	};
 
-	// Check if flow information is available
-	const hasFlow = () => (actualVariant?.flow ?? '').trim() !== '';
-
 	return {
-		// State
 		product,
 		loading,
 		error,
@@ -215,7 +262,6 @@ export function useProductDetails(
 		setImageError,
 		actualVariant,
 
-		// Selected parameters
 		selectedVoltage,
 		selectedType,
 		selectedLever,
@@ -224,8 +270,12 @@ export function useProductDetails(
 		selectedSize,
 		selectedBarValue,
 		selectedFiltration,
+		selectedSignalType,
+		selectedPistonDiameter,
+		selectedStrokeLength,
+		selectedStock,
+		selectedMagnet,
 
-		// Setters for parameters
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -234,8 +284,12 @@ export function useProductDetails(
 		setSelectedSize,
 		setSelectedBarValue,
 		setSelectedFiltration,
+		setSelectedSignalType,
+		setSelectedPistonDiameter,
+		setSelectedStrokeLength,
+		setSelectedStock,
+		setSelectedMagnet,
 
-		// Helper methods
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,

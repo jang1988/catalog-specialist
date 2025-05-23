@@ -81,13 +81,12 @@ export default function Search() {
 							</View>
 
 							{/* Поле поиска */}
-							<View className='my-5'>
-								<SearchBar
-									placeholder='Пошук пристрою...'
-									value={searchQuery}
-									onChangeText={(text: string) => setSearchQuery(text)}
-								/>
-							</View>
+
+							<SearchBar
+								placeholder='Пошук пристрою...'
+								value={searchQuery}
+								onChangeText={(text: string) => setSearchQuery(text)}
+							/>
 
 							{/* Индикатор загрузки */}
 							{loading && <ActivityIndicator size={'large'} color='#0000ff' />}

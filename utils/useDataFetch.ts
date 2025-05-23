@@ -76,30 +76,6 @@ export const fetchRecomends = async (
 };
 
 /**
- * Загружает список дистрибьюторов из базы данных.
- * @param {string} search - Строка поиска для фильтрации по имени.
- * @returns {Promise<array>} - Массив дистрибьюторов.
- */
-export const fetchDistributors = async (
-	search: string = ''
-): Promise<Array<any>> => {
-	try {
-		// Запрос к таблице дистрибьюторов с фильтрацией и сортировкой
-		const { data, error } = await supabase
-			.from('distributors_card')
-			.select('*')
-			.ilike('name', `%${search}%`) // Поиск с игнорированием регистра
-			.order('id', { ascending: true }); // Сортировка по возрастанию ID
-
-		if (error) throw error;
-		return data || []; // Возвращаем данные или пустой массив
-	} catch (error) {
-		console.error('Error fetching distributors:', error);
-		throw new Error('Не удалось загрузить дистрибьюторов');
-	}
-};
-
-/**
  * Загружает информацию о товаре по его ID из указанной таблицы.
  * @param {string} id - Идентификатор товара.
  * @param {string} table - Имя таблицы для поиска (опционально).
@@ -123,6 +99,8 @@ export const fetchProductById = async (
 				tableName = 'mainline_card';
 			} else if (table === 'air' || table === 'air_preparation_card') {
 				tableName = 'air_preparation_card';
+			}else if (table === 'cylinders' || table === 'cylinders_card') {
+				tableName = 'cylinders_card';
 			}
 		}
 
@@ -174,7 +152,8 @@ export const fetchGroupById = async (id: string): Promise<GroupResponse> => {
 			const { data, error } = await supabase
 				.from(table)
 				.select('*')
-				.eq('category_id', id); // Фильтрация по ID категории
+				.eq('category_id', id) // Фильтрация по ID категории
+				.order('id');
 
 			// Если найдены соответствующие данные, возвращаем их вместе с именем таблицы
 			if (!error && data && data.length > 0) {
@@ -225,12 +204,18 @@ export const fetchProductsByGroup = async (
 			.select('*')
 			.eq('group_table', table);
 
+		const queryCylinders = supabase
+			.from('cylinders_card')
+			.select('*')
+			.eq('group_table', table);
+
 		// Добавляем фильтр по group_id, если он указан
 		if (groupId) {
 			queryDistributors.eq('group', groupId);
 			queryCompressors.eq('group', groupId);
 			queryMainline.eq('group', groupId);
 			queryAirPreparation.eq('group', groupId);
+			queryCylinders.eq('group', groupId);
 		}
 
 		// Выполняем оба запроса параллельно для оптимизации времени
@@ -239,17 +224,20 @@ export const fetchProductsByGroup = async (
 			compressorsResult,
 			mainlineResult,
 			airPreparationResult,
+			cylindersResult,
 		] = await Promise.all([
 			queryDistributors,
 			queryCompressors,
 			queryMainline,
 			queryAirPreparation,
+			queryCylinders,
 		]);
 
 		if (distributorsResult.error) throw distributorsResult.error;
 		if (compressorsResult.error) throw compressorsResult.error;
 		if (mainlineResult.error) throw mainlineResult.error;
 		if (airPreparationResult.error) throw airPreparationResult.error;
+		if (cylindersResult.error) throw cylindersResult.error;
 
 		// Добавляем информацию о таблице к каждому товару для последующей идентификации
 		const distributorProducts = (distributorsResult.data || []).map(
@@ -276,12 +264,18 @@ export const fetchProductsByGroup = async (
 			})
 		);
 
+		const cylindersProducts = (cylindersResult.data || []).map(product => ({
+			...product,
+			table: 'cylinders_card',
+		}));
+
 		// Объединяем результаты из обеих таблиц в один массив
 		return [
 			...distributorProducts,
 			...compressorProducts,
 			...mainlineProducts,
 			...airPreparationProducts,
+			...cylindersProducts,
 		];
 	} catch (err) {
 		console.error(`Ошибка при загрузке товаров для группы ${table}:`, err);
@@ -300,21 +294,22 @@ export const fetchSearchProducts = async (
 ): Promise<Array<any>> => {
 	try {
 		// Выполняем поиск в трёх таблицах параллельно
-		const [distributors, compressors, mainlines, airPreparation] =
+		const [distributors, compressors, mainlines, airPreparation, cylinders] =
 			await Promise.all([
 				supabase
 					.from('distributors_card')
 					.select('*')
-					.ilike('name', `%${query}%`), // Поиск по таблице дистрибьюторов
+					.ilike('name', `%${query}%`),
 				supabase
 					.from('compressors_card')
 					.select('*')
-					.ilike('name', `%${query}%`), // Поиск по таблице компрессоров
-				supabase.from('mainline_card').select('*').ilike('name', `%${query}%`), // Поиск по новой таблице магистралей
+					.ilike('name', `%${query}%`),
+				supabase.from('mainline_card').select('*').ilike('name', `%${query}%`),
 				supabase
 					.from('air_preparation_card')
 					.select('*')
 					.ilike('name', `%${query}%`),
+				supabase.from('cylinders_card').select('*').ilike('name', `%${query}%`),
 			]);
 
 		// Добавляем информацию о таблице к каждому найденному товару
@@ -326,6 +321,8 @@ export const fetchSearchProducts = async (
 			mainlines.data?.map(p => ({ ...p, table: 'mainlines' })) || [];
 		const airPreparationProducts =
 			airPreparation.data?.map(p => ({ ...p, table: 'air' })) || [];
+		const cylindersProducts =
+			cylinders.data?.map(p => ({ ...p, table: 'cylinders' })) || [];
 
 		// Объединяем результаты из всех трёх таблиц
 		return [
@@ -333,6 +330,7 @@ export const fetchSearchProducts = async (
 			...compressorProducts,
 			...mainlineProducts,
 			...airPreparationProducts,
+			...cylindersProducts,
 		];
 	} catch (err) {
 		console.error('Ошибка при поиске товаров:', err);

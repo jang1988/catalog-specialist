@@ -22,15 +22,7 @@ export const ProductInfo = ({
 				<View className='flex-row items-center'>
 					<Text className='text-gray-300 text-base font-medium'>Модель</Text>
 					<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
-					<Text
-						className={`text-white text-base font-semibold ${
-							actualVariant.model?.length > 32 ? 'flex-1' : ''
-						}`}
-						numberOfLines={1}
-						ellipsizeMode={
-							actualVariant.model?.length > 32 ? 'tail' : undefined
-						}
-					>
+					<Text className='text-white text-base font-semibold'>
 						{actualVariant.model}
 					</Text>
 				</View>
@@ -175,7 +167,133 @@ export const ProductInfo = ({
 						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
 
 						<Text className='text-white text-base font-semibold'>
-							{actualVariant.filtration} мкм
+							{actualVariant.filtration}
+							{!['поліпропілен', 'бронза'].includes(actualVariant.filtration) &&
+								' мкм'}
+						</Text>
+					</View>
+				)}
+
+				{actualVariant?.signal_type && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Тип вхідного сигналу
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.signal_type} мкм
+						</Text>
+					</View>
+				)}
+
+				{product?.filtration_single && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Фільтрація
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{product.filtration_single} мкм
+						</Text>
+					</View>
+				)}
+
+				{product?.mode_action && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Спосіб дії
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{product.mode_action}
+						</Text>
+					</View>
+				)}
+
+				{product?.view && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>Вид</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{product.view}
+						</Text>
+					</View>
+				)}
+
+				{product?.iso && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Стандарт
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{product.iso}
+						</Text>
+					</View>
+				)}
+
+				{actualVariant?.piston_diameter && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Діаметр поршню
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.piston_diameter}
+						</Text>
+					</View>
+				)}
+
+				{actualVariant?.stroke_length && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Довжина ходу
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.stroke_length}
+						</Text>
+					</View>
+				)}
+
+				{actualVariant?.magnet && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Наявність магніту
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.magnet}
+						</Text>
+					</View>
+				)}
+
+				{actualVariant?.stock && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Наявність магніту
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.stock}
 						</Text>
 					</View>
 				)}
@@ -186,9 +304,13 @@ export const ProductInfo = ({
 				<Text className='text-white text-lg font-bold'>Ціна</Text>
 				<View className='flex-row items-center'>
 					<Text className='text-2xl font-bold text-green-400 mr-1'>
-						{Number(actualVariant.price).toLocaleString('ru-RU')}
+						{isNaN(Number(actualVariant.price))
+							? actualVariant.price
+							: Number(actualVariant.price).toLocaleString('ru-RU')}
 					</Text>
-					<Text className='text-gray-400 text-sm'>грн</Text>
+					{!isNaN(Number(actualVariant.price)) && (
+						<Text className='text-gray-400 text-sm'>грн</Text>
+					)}
 				</View>
 			</View>
 		</View>

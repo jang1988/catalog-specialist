@@ -7,6 +7,10 @@ export interface Product {
 	type?: string[];
 	num_lines?: string;
 	bar?: string;
+	filtration_single?: string;
+	mode_action?: string;
+	iso?: string;
+	view?: string;
 	desc?: string;
 	variants?: Variant[];
 }
@@ -30,6 +34,11 @@ export interface Variant {
 	size?: string;
 	bar_value?: string;
 	filtration?: string;
+	signal_type?: string;
+	piston_diameter?: string;
+	stroke_length?: string;
+	magnet?: string;
+	stock?: string;
 }
 
 export interface GroupItem {

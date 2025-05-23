@@ -34,6 +34,11 @@ export default function ProductDetails() {
 		selectedSize,
 		selectedBarValue,
 		selectedFiltration,
+		selectedSignalType,
+		selectedPistonDiameter,
+		selectedStrokeLength,
+		selectedStock,
+		selectedMagnet,
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -42,6 +47,11 @@ export default function ProductDetails() {
 		setSelectedSize,
 		setSelectedBarValue,
 		setSelectedFiltration,
+		setSelectedSignalType,
+		setSelectedPistonDiameter,
+		setSelectedStrokeLength,
+		setSelectedStock,
+		setSelectedMagnet,
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,
@@ -58,6 +68,11 @@ export default function ProductDetails() {
 	const compatibleSizes = getCompatibleValues('size');
 	const compatibleBarValues = getCompatibleValues('bar_value');
 	const compatibleFiltrations = getCompatibleValues('filtration');
+	const compatibleSignalTypes = getCompatibleValues('signal_type');
+	const compatiblePistonDiameters = getCompatibleValues('piston_diameter');
+	const compatibleStrokeLengths = getCompatibleValues('stroke_length');
+	const compatibleStocks = getCompatibleValues('stock');
+	const compatibleMagnets = getCompatibleValues('magnet');
 	// Display loading indicator
 	if (loading) {
 		return (
@@ -190,6 +205,41 @@ export default function ProductDetails() {
 						onSelect={setSelectedFiltration}
 					/>
 
+					<ProductOption
+						title='Тип вхідного сигналу'
+						options={compatibleSignalTypes}
+						selectedOption={selectedSignalType}
+						onSelect={setSelectedSignalType}
+					/>
+
+					<ProductOption
+						title='Діаметр поршню'
+						options={compatiblePistonDiameters}
+						selectedOption={selectedPistonDiameter}
+						onSelect={setSelectedPistonDiameter}
+					/>
+
+					<ProductOption
+						title='Довжина ходу'
+						options={compatibleStrokeLengths}
+						selectedOption={selectedStrokeLength}
+						onSelect={setSelectedStrokeLength}
+					/>
+
+					<ProductOption
+						title='Шток'
+						options={compatibleStocks}
+						selectedOption={selectedStock}
+						onSelect={setSelectedStock}
+					/>
+
+					<ProductOption
+						title='Магніт'
+						options={compatibleMagnets}
+						selectedOption={selectedMagnet}
+						onSelect={setSelectedMagnet}
+					/>
+
 					<DeliveryInfo
 						hasDeliveryInfo={hasDeliveryInfo}
 						getDeliveryInfo={getDeliveryInfo}
@@ -198,7 +248,7 @@ export default function ProductDetails() {
 					{/* Add to cart button */}
 					<View className='flex-row justify-center mt-8'>
 						<TouchableOpacity
-							className='bg-green-600 px-8 py-4 rounded-full shadow-md active:bg-green-700 w-full'
+							className='bg-greener px-8 py-4 rounded-full shadow-md active:bg-greener w-full'
 							disabled={!actualVariant}
 							style={{ opacity: actualVariant ? 1 : 0.5 }}
 						>
