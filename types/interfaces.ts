@@ -38,6 +38,8 @@ export interface Variant {
 	piston_diameter?: string;
 	stroke_length?: string;
 	magnet?: string;
+	rotation?: string;
+	angle_type?: string;
 	stock?: string;
 }
 

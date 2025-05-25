@@ -18,40 +18,38 @@ export const useAutoScroll = (
 ) => {
 	const scrollX = useRef(new Animated.Value(0)).current;
 	const scrollOffset = useRef(0);
-	const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(
-		null
-	);
+	const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isTouching, setIsTouching] = useState(false);
 
-	const handleScroll = Animated.event(
-		[{ nativeEvent: { contentOffset: { x: scrollX } } }],
-		{
-			useNativeDriver: false,
-			listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-				scrollOffset.current = event.nativeEvent.contentOffset.x;
-			},
+	const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+		const offsetX = event.nativeEvent.contentOffset.x;
+		scrollOffset.current = offsetX;
+
+		const totalContentWidth = data.length * CARD_WIDTH;
+		if (offsetX >= totalContentWidth) {
+			// Без анимации возвращаемся к началу
+			ref.current?.scrollToOffset({ offset: 0, animated: false });
+			scrollOffset.current = 0;
 		}
-	);
+	}, [data, ref]);
 
 	const startAutoScroll = useCallback(() => {
 		if (autoScrollTimerRef.current) {
 			clearInterval(autoScrollTimerRef.current);
 		}
 
-		if (!data?.length || !autoScrollEnabled || isDragging || isTouching) {
-			return;
-		}
+		if (!data?.length || !autoScrollEnabled || isDragging || isTouching) return;
 
 		autoScrollTimerRef.current = setInterval(() => {
 			if (!ref.current || isDragging || isTouching) return;
 
 			const newOffset = scrollOffset.current + SCROLL_SPEED;
-			const maxOffset = data.length * 2 * CARD_WIDTH;
+			const totalContentWidth = data.length * CARD_WIDTH;
 
-			if (newOffset >= maxOffset - SCREEN_WIDTH) {
+			if (newOffset >= totalContentWidth) {
 				ref.current.scrollToOffset({ offset: 0, animated: false });
 				scrollOffset.current = 0;
 			} else {
@@ -59,32 +57,21 @@ export const useAutoScroll = (
 				scrollOffset.current = newOffset;
 			}
 		}, AUTO_SCROLL_INTERVAL);
-
-		return () => {
-			if (autoScrollTimerRef.current) {
-				clearInterval(autoScrollTimerRef.current);
-			}
-		};
 	}, [data, autoScrollEnabled, isDragging, isTouching]);
 
 	useEffect(() => {
-		if (data?.length && !isDragging && !isTouching) {
-			startAutoScroll();
-		}
-
+		startAutoScroll();
 		return () => {
 			if (autoScrollTimerRef.current) {
 				clearInterval(autoScrollTimerRef.current);
 			}
 		};
-	}, [data, autoScrollEnabled, isDragging, isTouching, startAutoScroll]);
+	}, [startAutoScroll]);
 
 	const handleTouchStart = () => {
 		setIsTouching(true);
 		setAutoScrollEnabled(false);
-		if (autoScrollTimerRef.current) {
-			clearInterval(autoScrollTimerRef.current);
-		}
+		if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
 	};
 
 	const handleTouchEnd = () => {
@@ -96,9 +83,7 @@ export const useAutoScroll = (
 	const onScrollBeginDrag = () => {
 		setIsDragging(true);
 		setAutoScrollEnabled(false);
-		if (autoScrollTimerRef.current) {
-			clearInterval(autoScrollTimerRef.current);
-		}
+		if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
 	};
 
 	const onScrollEndDrag = () => {

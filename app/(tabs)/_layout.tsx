@@ -43,12 +43,13 @@ export default function TabsLayout() {
 					marginBottom: 36,
 					height: 52,
 					position: 'absolute',
-					overflow: 'hidden',
 					borderWidth: 1,
 					borderColor: '#138352',
+					
 				},
 			}}
 		>
+			
 			<Tabs.Screen
 				name='index'
 				options={{

@@ -39,6 +39,8 @@ export default function ProductDetails() {
 		selectedStrokeLength,
 		selectedStock,
 		selectedMagnet,
+		selectedRotation,
+		selectedAngleType,
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -52,6 +54,8 @@ export default function ProductDetails() {
 		setSelectedStrokeLength,
 		setSelectedStock,
 		setSelectedMagnet,
+		setSelectedRotation,
+		setSelectedAngleType,
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,
@@ -73,6 +77,8 @@ export default function ProductDetails() {
 	const compatibleStrokeLengths = getCompatibleValues('stroke_length');
 	const compatibleStocks = getCompatibleValues('stock');
 	const compatibleMagnets = getCompatibleValues('magnet');
+	const compatibleRotations = getCompatibleValues('rotation');
+	const compatibleAngleTypes = getCompatibleValues('angle_type');
 	// Display loading indicator
 	if (loading) {
 		return (
@@ -233,11 +239,27 @@ export default function ProductDetails() {
 						onSelect={setSelectedStock}
 					/>
 
+					{compatibleMagnets.length > 1 && (
+						<ProductOption
+							title='Магніт'
+							options={compatibleMagnets}
+							selectedOption={selectedMagnet}
+							onSelect={setSelectedMagnet}
+						/>
+					)}
+
 					<ProductOption
-						title='Магніт'
-						options={compatibleMagnets}
-						selectedOption={selectedMagnet}
-						onSelect={setSelectedMagnet}
+						title='Кут повороту'
+						options={compatibleRotations}
+						selectedOption={selectedRotation}
+						onSelect={setSelectedRotation}
+					/>
+
+					<ProductOption
+						title='Тип'
+						options={compatibleAngleTypes}
+						selectedOption={selectedAngleType}
+						onSelect={setSelectedAngleType}
 					/>
 
 					<DeliveryInfo
@@ -248,9 +270,9 @@ export default function ProductDetails() {
 					{/* Add to cart button */}
 					<View className='flex-row justify-center mt-8'>
 						<TouchableOpacity
-							className='bg-greener px-8 py-4 rounded-full shadow-md active:bg-greener w-full'
+							className='bg-greener px-8 py-4 rounded-full shadow-md active:bg-greener w-full border-[.5px] border-white/50'
 							disabled={!actualVariant}
-							style={{ opacity: actualVariant ? 1 : 0.5 }}
+							style={{ opacity: actualVariant ? 1 : 0.5,  }}
 						>
 							<Text className='text-white text-lg font-bold text-center tracking-wider'>
 								ЗАМОВИТИ

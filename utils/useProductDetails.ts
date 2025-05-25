@@ -6,13 +6,13 @@ export function useProductDetails(
 	id: string | string[],
 	table?: string | string[]
 ) {
-	// ── Дані продукту ───────────────────────────────────────────
+	// Состояние данных продукта
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [imageError, setImageError] = useState(false);
 
-	// ── Вибрані поля ────────────────────────────────────────────
+	// Выбранные поля вариантов продукта
 	const [selectedVoltage, setSelectedVoltage] = useState('');
 	const [selectedType, setSelectedType] = useState('');
 	const [selectedLever, setSelectedLever] = useState('');
@@ -26,10 +26,12 @@ export function useProductDetails(
 	const [selectedStrokeLength, setSelectedStrokeLength] = useState('');
 	const [selectedStock, setSelectedStock] = useState('');
 	const [selectedMagnet, setSelectedMagnet] = useState('');
+	const [selectedRotation, setSelectedRotation] = useState('');
+	const [selectedAngleType, setSelectedAngleType] = useState('');
 
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
 
-	// ── Завантаження продукту ────────────────────────────────────
+	// Загрузка данных продукта
 	useEffect(() => {
 		const normalizedId = Array.isArray(id) ? id[0] : id;
 		const normalizedTable = table
@@ -43,8 +45,8 @@ export function useProductDetails(
 				const data = await fetchProductById(normalizedId, normalizedTable);
 				setProduct(data);
 
+				// Устанавливаем начальное значение thread если есть варианты
 				if (data.variants?.length) {
-					// початковий thread
 					const threads = Array.from(
 						new Set(data.variants.map(v => v.thread || ''))
 					).filter(t => t);
@@ -52,7 +54,7 @@ export function useProductDetails(
 					setSelectedThread(prev => prev || initialThread);
 				}
 			} catch (err: any) {
-				setError(err.message || 'Помилка завантаження');
+				setError(err.message || 'Ошибка загрузки');
 			} finally {
 				setLoading(false);
 			}
@@ -62,16 +64,16 @@ export function useProductDetails(
 			setLoading(true);
 			fetchData();
 		} else {
-			setError('ID товару не вказано');
+			setError('ID товара не указан');
 			setLoading(false);
 		}
 	}, [id, table]);
 
-	// ── Мемоізоване обчислення відповідного варіанту ────────────
+	// Поиск подходящего варианта на основе выбранных критериев
 	const computedVariant = useMemo<Variant | null>(() => {
 		if (!product?.variants?.length) return null;
 
-		// Создаем массив критериев для поиска (в порядке приоритета)
+		// Критерии поиска в порядке приоритета
 		const searchCriteria = {
 			voltage: selectedVoltage,
 			type: selectedType,
@@ -86,9 +88,11 @@ export function useProductDetails(
 			stroke_length: selectedStrokeLength,
 			stock: selectedStock,
 			magnet: selectedMagnet,
+			rotation: selectedRotation,
+			angle_type: selectedAngleType
 		};
 
-		// Функция для проверки соответствия варианта критериям
+		// Проверка соответствия варианта заданным критериям
 		const matchesCriteria = (variant: Variant, criteria: any) => {
 			return Object.entries(criteria).every(([key, value]) => {
 				if (value === '') return true; // пустое значение означает "любое"
@@ -100,7 +104,7 @@ export function useProductDetails(
 		let found = product.variants.find(v => matchesCriteria(v, searchCriteria));
 		if (found) return found;
 
-		// 2. Если точного совпадения нет и выбран piston_diameter,
+		// 2. Если нет точного совпадения и выбран piston_diameter,
 		// ищем вариант с подходящим piston_diameter и любым stroke_length
 		if (selectedPistonDiameter) {
 			const criteriaWithoutStroke = { ...searchCriteria, stroke_length: '' };
@@ -110,13 +114,13 @@ export function useProductDetails(
 			if (found) return found;
 		}
 
-		// 3. Приоритизируем поиск по thread (если он выбран)
+		// 3. Приоритизируем поиск по thread (если выбран)
 		if (selectedThread) {
 			found = product.variants.find(v => v.thread === selectedThread);
 			if (found) return found;
 		}
 
-		// 4. Если и по thread ничего не найдено, возвращаем первый доступный вариант
+		// 4. Возвращаем первый доступный вариант как запасной
 		return product.variants[0] || null;
 	}, [
 		product?.variants,
@@ -133,9 +137,11 @@ export function useProductDetails(
 		selectedStrokeLength,
 		selectedStock,
 		selectedMagnet,
+		selectedRotation,
+		selectedAngleType
 	]);
 
-	// ── Синхронне оновлення state перед відмалюванням ─────────────
+	// Синхронизация состояния перед рендерингом
 	useLayoutEffect(() => {
 		if (!computedVariant) {
 			setActualVariant(null);
@@ -144,7 +150,7 @@ export function useProductDetails(
 
 		setActualVariant(computedVariant);
 
-		// обновляем значения только если они отличаются
+		// Обновляем выбранные значения только если они отличаются от вычисленного варианта
 		if (computedVariant.voltage !== selectedVoltage)
 			setSelectedVoltage(computedVariant.voltage || '');
 		if (computedVariant.type !== selectedType)
@@ -169,11 +175,17 @@ export function useProductDetails(
 			setSelectedStock(computedVariant.stock || '');
 		if (computedVariant.magnet !== selectedMagnet)
 			setSelectedMagnet(computedVariant.magnet || '');
+		if (computedVariant.rotation !== selectedRotation)
+			setSelectedRotation(computedVariant.rotation || '');
+		if (computedVariant.angle_type !== selectedAngleType)
+			setSelectedAngleType(computedVariant.angle_type || '');
 	}, [computedVariant]);
 
-	// ── Допоміжні методи ─────────────────────────────────────────
+	// Получить совместимые значения для конкретного поля на основе текущих выборов
 	const getCompatibleValues = <K extends keyof Variant>(field: K): string[] => {
 		if (!product?.variants) return [];
+		
+		// Поля, которые всегда показывают все доступные значения
 		const alwaysShowAll = ['thread', 'piston_diameter'];
 
 		if (alwaysShowAll.includes(field as string)) {
@@ -181,6 +193,8 @@ export function useProductDetails(
 				new Set(product.variants.map(v => v[field] || '').filter(Boolean))
 			);
 		}
+
+		// Фильтруем значения на основе текущих выборов
 		return Array.from(
 			new Set(
 				product.variants
@@ -199,6 +213,8 @@ export function useProductDetails(
 							stroke_length: selectedStrokeLength,
 							stock: selectedStock,
 							magnet: selectedMagnet,
+							rotation: selectedRotation,
+							angle_type: selectedAngleType
 						}).every(
 							([key, val]) =>
 								key === field || val === '' || v[key as keyof Variant] === val
@@ -210,12 +226,13 @@ export function useProductDetails(
 		);
 	};
 
+	// Вспомогательные методы для информации о варианте
 	const hasDeliveryInfo = () => Boolean(actualVariant?.delivery?.trim());
 	const getDeliveryInfo = () => actualVariant?.delivery || '';
 	const hasFlow = () => Boolean(actualVariant?.flow?.trim());
 
+	// Сопоставление кодов типов с читаемыми названиями
 	const getTypeName = (typeCode: string) => {
-		// можна винести цей словник в окремий файл
 		const typeMap: Record<string, string> = {
 			C: 'з закритим центром',
 			E: 'з відкритим центром',
@@ -255,6 +272,7 @@ export function useProductDetails(
 	};
 
 	return {
+		// Данные продукта
 		product,
 		loading,
 		error,
@@ -262,6 +280,7 @@ export function useProductDetails(
 		setImageError,
 		actualVariant,
 
+		// Выбранные значения
 		selectedVoltage,
 		selectedType,
 		selectedLever,
@@ -275,7 +294,10 @@ export function useProductDetails(
 		selectedStrokeLength,
 		selectedStock,
 		selectedMagnet,
+		selectedRotation,
+		selectedAngleType,
 
+		// Сеттеры
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -289,7 +311,10 @@ export function useProductDetails(
 		setSelectedStrokeLength,
 		setSelectedStock,
 		setSelectedMagnet,
+		setSelectedRotation,
+		setSelectedAngleType,
 
+		// Вспомогательные методы
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,

@@ -33,7 +33,7 @@ export default function CategoriesSection({
 			<Text className='text-white text-lg font-bold mt-5 mb-3'>КАТЕГОРІЇ</Text>
 			<FlashList
 				ref={carouselRef}
-				data={[...data, ...data]}
+				data={[...data]}
 				horizontal
 				estimatedItemSize={150}
 				showsHorizontalScrollIndicator={false}
