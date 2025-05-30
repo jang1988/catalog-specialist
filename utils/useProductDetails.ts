@@ -28,6 +28,11 @@ export function useProductDetails(
 	const [selectedMagnet, setSelectedMagnet] = useState('');
 	const [selectedRotation, setSelectedRotation] = useState('');
 	const [selectedAngleType, setSelectedAngleType] = useState('');
+	const [selectedEffort, setSelectedEffort] = useState('');
+	const [selectedAccession, setSelectedAccession] = useState('');
+	const [selectedPassage, setSelectedPassage] = useState('');
+	const [selectedSealing, setSelectedSealing] = useState('');
+	const [selectedDisc, setSelectedDisc] = useState('');
 
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
 
@@ -89,7 +94,12 @@ export function useProductDetails(
 			stock: selectedStock,
 			magnet: selectedMagnet,
 			rotation: selectedRotation,
-			angle_type: selectedAngleType
+			angle_type: selectedAngleType,
+			effort: selectedEffort,
+			accession: selectedAccession,
+			passage: selectedPassage,
+			sealing: selectedSealing,
+			disc: selectedDisc,
 		};
 
 		// Проверка соответствия варианта заданным критериям
@@ -138,7 +148,12 @@ export function useProductDetails(
 		selectedStock,
 		selectedMagnet,
 		selectedRotation,
-		selectedAngleType
+		selectedAngleType,
+		selectedEffort,
+		selectedAccession,
+		selectedPassage,
+		selectedSealing,
+		selectedDisc,
 	]);
 
 	// Синхронизация состояния перед рендерингом
@@ -179,12 +194,22 @@ export function useProductDetails(
 			setSelectedRotation(computedVariant.rotation || '');
 		if (computedVariant.angle_type !== selectedAngleType)
 			setSelectedAngleType(computedVariant.angle_type || '');
+		if (computedVariant.effort !== selectedEffort)
+			setSelectedEffort(computedVariant.effort || '');
+		if (computedVariant.accession !== selectedAccession)
+			setSelectedAccession(computedVariant.accession || '');
+		if (computedVariant.passage !== selectedPassage)
+			setSelectedPassage(computedVariant.passage || '');
+		if (computedVariant.sealing !== selectedSealing)
+			setSelectedSealing(computedVariant.sealing || '');
+		if (computedVariant.disc !== selectedDisc)
+			setSelectedDisc(computedVariant.disc || '');
 	}, [computedVariant]);
 
 	// Получить совместимые значения для конкретного поля на основе текущих выборов
 	const getCompatibleValues = <K extends keyof Variant>(field: K): string[] => {
 		if (!product?.variants) return [];
-		
+
 		// Поля, которые всегда показывают все доступные значения
 		const alwaysShowAll = ['thread', 'piston_diameter'];
 
@@ -214,7 +239,12 @@ export function useProductDetails(
 							stock: selectedStock,
 							magnet: selectedMagnet,
 							rotation: selectedRotation,
-							angle_type: selectedAngleType
+							angle_type: selectedAngleType,
+							effort: selectedEffort,
+							accession: selectedAccession,
+							passage: selectedPassage,
+							sealing: selectedSealing,
+							disc: selectedDisc,
 						}).every(
 							([key, val]) =>
 								key === field || val === '' || v[key as keyof Variant] === val
@@ -296,6 +326,11 @@ export function useProductDetails(
 		selectedMagnet,
 		selectedRotation,
 		selectedAngleType,
+		selectedEffort,
+		selectedAccession,
+		selectedPassage,
+		selectedSealing,
+		selectedDisc,
 
 		// Сеттеры
 		setSelectedVoltage,
@@ -313,6 +348,11 @@ export function useProductDetails(
 		setSelectedMagnet,
 		setSelectedRotation,
 		setSelectedAngleType,
+		setSelectedEffort,
+		setSelectedAccession,
+		setSelectedPassage,
+		setSelectedSealing,
+		setSelectedDisc,
 
 		// Вспомогательные методы
 		getCompatibleValues,

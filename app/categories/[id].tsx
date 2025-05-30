@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CategoryHeader } from '@/components/category/CategoryHeader';
 import { CategoryContent } from '@/components/category/CategoryContent';
@@ -9,22 +9,95 @@ import {
   fetchGroupById,
   fetchProductsByGroup,
 } from '@/utils/useDataFetch';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+  withSequence,
+} from 'react-native-reanimated';
+
+// Константы для анимации
+const ANIMATION_CONFIG = {
+  HEADER: {
+    OPACITY: {
+      duration: 600,
+      easing: Easing.out(Easing.exp),
+    },
+  },
+  CONTENT: {
+    ENTRANCE: {
+      translateY: {
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+      },
+    },
+    GROUP_CHANGE: {
+      scale: {
+        duration: 200,
+        easing: Easing.out(Easing.cubic),
+      },
+    },
+  },
+};
 
 export default function Category() {
-  // Навигация и параметры
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  // Обработка случая, когда id может быть массивом
   const categoryId = Array.isArray(id) ? id[0] : id;
 
   // Состояния компонента
-  const [groups, setGroups] = useState<GroupItem[]>([]); // Список групп категории
-  const [products, setProducts] = useState<Product[]>([]); // Список товаров
-  const [category, setCategory] = useState(''); // Название категории
-  const [loading, setLoading] = useState(true); // Состояние загрузки
-  const [error, setError] = useState<string | null>(null); // Ошибки
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null); // Выбранная группа
-  const [groupTable, setGroupTable] = useState<string | null>(null); // Таблица группы
+  const [groups, setGroups] = useState<GroupItem[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [category, setCategory] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [groupTable, setGroupTable] = useState<string | null>(null);
+
+  // Анимационные переменные
+  const headerOpacity = useSharedValue(0);
+  const contentTranslateY = useSharedValue(50);
+  const contentScale = useSharedValue(1);
+
+  // Стили анимации
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+  }));
+
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: contentTranslateY.value },
+      { scale: contentScale.value },
+    ],
+  }));
+
+  // Инициализация анимации при монтировании
+  useEffect(() => {
+    const startInitialAnimations = () => {
+      headerOpacity.value = withTiming(1, ANIMATION_CONFIG.HEADER.OPACITY);
+      contentTranslateY.value = withTiming(
+        0, 
+        ANIMATION_CONFIG.CONTENT.ENTRANCE.translateY
+      );
+    };
+
+    startInitialAnimations();
+  }, []);
+
+  // Анимация при смене группы
+  useEffect(() => {
+    if (selectedGroup) {
+      const runGroupChangeAnimation = () => {
+        contentScale.value = withSequence(
+          withTiming(0.95, ANIMATION_CONFIG.CONTENT.GROUP_CHANGE.scale),
+          withTiming(1, ANIMATION_CONFIG.CONTENT.GROUP_CHANGE.scale)
+        );
+      };
+
+      runGroupChangeAnimation();
+    }
+  }, [selectedGroup]);
 
   // Загрузка данных категории и групп
   const fetchGroupsAndProducts = useCallback(async () => {
@@ -38,16 +111,13 @@ export default function Category() {
       setLoading(true);
       setError(null);
 
-      // 1. Получаем название категории
       const categoryName = await fetchCategoryById(categoryId);
       setCategory(categoryName);
 
-      // 2. Получаем группы категории
       const groupsResult = await fetchGroupById(categoryId);
       setGroups(groupsResult.data);
-      setGroupTable(groupsResult.table); // Сохраняем таблицу для последующих запросов
+      setGroupTable(groupsResult.table);
 
-      // 3. Если есть таблица - загружаем товары
       if (groupsResult.table) {
         const productData = await fetchProductsByGroup(groupsResult.table);
         setProducts(productData);
@@ -63,7 +133,6 @@ export default function Category() {
   const fetchProducts = useCallback(async () => {
     if (groupTable) {
       try {
-        // Загружаем товары с фильтрацией по группе (если выбрана)
         const productData = await fetchProductsByGroup(
           groupTable,
           selectedGroup || undefined
@@ -75,51 +144,60 @@ export default function Category() {
     }
   }, [groupTable, selectedGroup]);
 
-  // Первоначальная загрузка данных при монтировании
+  // Эффекты для загрузки данных
   useEffect(() => {
     fetchGroupsAndProducts();
   }, [fetchGroupsAndProducts]);
 
-  // Обновление товаров при изменении группы
   useEffect(() => {
     if (groupTable) {
       fetchProducts();
     }
   }, [groupTable, selectedGroup, fetchProducts]);
 
-  // Обработчик кнопки "назад"
   const handleBackPress = () => {
     if (selectedGroup) {
-      // Если выбрана группа - сбрасываем выбор
       setSelectedGroup(null);
     } else {
-      // Иначе - возвращаемся на предыдущий экран
       router.back();
     }
   };
 
   return (
-    <View className='flex-1 bg-gray-900'>
-      {/* Шапка категории */}
-      <CategoryHeader
-        selectedGroup={selectedGroup}
-        category={category}
-        groups={groups}
-        onBackPress={handleBackPress}
-      />
-      
-      {/* Основное содержимое */}
-      <View className='flex-1 p-2'>
+    <View style={styles.container}>
+      {/* Анимированная шапка */}
+      <Animated.View style={animatedHeaderStyle}>
+        <CategoryHeader
+          selectedGroup={selectedGroup}
+          category={category}
+          groups={groups}
+          onBackPress={handleBackPress}
+        />
+      </Animated.View>
+
+      {/* Анимированное содержимое */}
+      <Animated.View style={[styles.content, animatedContentStyle]}>
         <CategoryContent
           loading={loading}
           error={error}
           selectedGroup={selectedGroup}
           groups={groups}
           products={products}
-          onGroupPress={setSelectedGroup} // Обработчик выбора группы
-          onRetry={fetchGroupsAndProducts} // Повторная попытка загрузки
+          onGroupPress={setSelectedGroup}
+          onRetry={fetchGroupsAndProducts}
         />
-      </View>
+      </Animated.View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1F2937',
+  },
+  content: {
+    flex: 1,
+    padding: 8,
+  },
+});

@@ -3,7 +3,7 @@ import SearchBar from '@/components/SearchBar';
 import { images } from '@/constants/images';
 import { fetchSearchProducts } from '@/utils/useDataFetch';
 import useFetch from '@/utils/useFetch';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
 	ActivityIndicator,
 	FlatList,
@@ -11,11 +11,16 @@ import {
 	ScrollView,
 	Text,
 	View,
+	TextInput,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Search() {
 	// Состояние для поискового запроса
 	const [searchQuery, setSearchQuery] = useState('');
+	
+	// Реф для поля поиска
+	const searchInputRef = useRef<TextInput>(null);
 
 	// Получение продуктов через кастомный хук useFetch
 	const {
@@ -25,6 +30,16 @@ export default function Search() {
 		reset,
 		refetch: loadingProducts,
 	} = useFetch(() => fetchSearchProducts(searchQuery));
+
+	// Автофокус при открытии экрана
+	useFocusEffect(() => {
+		// Небольшая задержка для корректной работы автофокуса
+		const timer = setTimeout(() => {
+			searchInputRef.current?.focus();
+		}, 100);
+
+		return () => clearTimeout(timer);
+	});
 
 	// Эффект для отложенного поиска (debounce)
 	useEffect(() => {
@@ -80,12 +95,13 @@ export default function Search() {
 								<Image source={images.logo} className='w-[100px] h-[100px]' />
 							</View>
 
-							{/* Поле поиска */}
-
+							{/* Поле поиска с автофокусом */}
 							<SearchBar
+								ref={searchInputRef}
 								placeholder='Пошук пристрою...'
 								value={searchQuery}
 								onChangeText={(text: string) => setSearchQuery(text)}
+								autoFocus={true}
 							/>
 
 							{/* Индикатор загрузки */}

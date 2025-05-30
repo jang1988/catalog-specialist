@@ -41,6 +41,11 @@ export default function ProductDetails() {
 		selectedMagnet,
 		selectedRotation,
 		selectedAngleType,
+		selectedEffort,
+		selectedAccession,
+		selectedPassage,
+		selectedSealing,
+		selectedDisc,
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -56,6 +61,11 @@ export default function ProductDetails() {
 		setSelectedMagnet,
 		setSelectedRotation,
 		setSelectedAngleType,
+		setSelectedEffort,
+		setSelectedAccession,
+		setSelectedPassage,
+		setSelectedSealing,
+		setSelectedDisc,
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,
@@ -79,6 +89,12 @@ export default function ProductDetails() {
 	const compatibleMagnets = getCompatibleValues('magnet');
 	const compatibleRotations = getCompatibleValues('rotation');
 	const compatibleAngleTypes = getCompatibleValues('angle_type');
+	const compatibleEfforts = getCompatibleValues('effort');
+	const compatibleAccessions = getCompatibleValues('accession');
+	const compatiblePassages = getCompatibleValues('passage');
+	const compatibleSealing = getCompatibleValues('sealing');
+	const compatibleDisc = getCompatibleValues('disc');
+
 	// Display loading indicator
 	if (loading) {
 		return (
@@ -160,6 +176,20 @@ export default function ProductDetails() {
 						options={compatibleThreads}
 						selectedOption={selectedThread}
 						onSelect={setSelectedThread}
+					/>
+
+					<ProductOption
+						title='Приєднання'
+						options={compatibleAccessions}
+						selectedOption={selectedAccession}
+						onSelect={setSelectedAccession}
+					/>
+
+					<ProductOption
+						title='Діаметр умовного проходу'
+						options={compatiblePassages}
+						selectedOption={selectedPassage}
+						onSelect={setSelectedPassage}
 					/>
 
 					<ProductOption
@@ -262,6 +292,27 @@ export default function ProductDetails() {
 						onSelect={setSelectedAngleType}
 					/>
 
+					<ProductOption
+						title='Зусилля'
+						options={compatibleEfforts}
+						selectedOption={selectedEffort}
+						onSelect={setSelectedEffort}
+					/>
+
+					<ProductOption
+						title='Ущільнення'
+						options={compatibleSealing}
+						selectedOption={selectedSealing}
+						onSelect={setSelectedSealing}
+					/>
+
+					<ProductOption
+						title='Диск'
+						options={compatibleDisc}
+						selectedOption={selectedDisc}
+						onSelect={setSelectedDisc}
+					/>
+
 					<DeliveryInfo
 						hasDeliveryInfo={hasDeliveryInfo}
 						getDeliveryInfo={getDeliveryInfo}
@@ -272,7 +323,7 @@ export default function ProductDetails() {
 						<TouchableOpacity
 							className='bg-greener px-8 py-4 rounded-full shadow-md active:bg-greener w-full border-[.5px] border-white/50'
 							disabled={!actualVariant}
-							style={{ opacity: actualVariant ? 1 : 0.5,  }}
+							style={{ opacity: actualVariant ? 1 : 0.5 }}
 						>
 							<Text className='text-white text-lg font-bold text-center tracking-wider'>
 								ЗАМОВИТИ

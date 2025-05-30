@@ -40,7 +40,12 @@ export interface Variant {
 	magnet?: string;
 	rotation?: string;
 	angle_type?: string;
+	effort?: string;
 	stock?: string;
+	accession?: string;
+	passage?: string;
+	sealing?: string;
+	disc?: string;
 }
 
 export interface GroupItem {
@@ -64,7 +69,7 @@ export interface CategoryContentProps {
 	onRetry: () => void;
 }
 
-export interface Props {
+export interface GroupCardProps {
 	group: GroupItem;
 	isSelected?: boolean;
 	onPress?: () => void;
@@ -75,4 +80,13 @@ export interface CategoryHeaderProps {
 	category: string;
 	groups: Array<{ id: string; name: string }>;
 	onBackPress: () => void;
+}
+
+export interface SearchBarProps {
+	onPress?: () => void;
+	placeholder: string;
+	value?: string;
+	onChangeText?: (text: string) => void;
+	editable?: boolean;
+	autoFocus?: boolean;
 }

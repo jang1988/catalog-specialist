@@ -5,16 +5,16 @@ import { Image, Text, TouchableOpacity, View } from 'react-native';
 export default function CategoryCard({ id, name, img_url }: any) {
 	return (
 		<Link href={`/categories/${id}`} asChild>
-			<TouchableOpacity className='w-32 items-center mx-2'>
-				<View className='w-32 h-28 rounded-lg overflow-hidden shadow'>
+			<TouchableOpacity className='w-40 items-center mx-2'>
+				<View className='w-40 h-28 rounded-lg overflow-hidden shadow'>
 					<Image
 						source={{ uri: img_url }}
 						className='w-full h-full'
-						resizeMode='contain'
+						resizeMode='cover'
 					/>
 				</View>
 				<Text
-					className='mt-2 text-center text-white font-bold text-xs'
+					className='mt-2 text-center text-white font-bold text-2xs'
 					numberOfLines={2}
 				>
 					{name}

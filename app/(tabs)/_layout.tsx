@@ -10,8 +10,8 @@ const TabIcon = ({ focused, icon, title }: any) => {
 				source={images.highlight}
 				className='flex flex-row w-full flex-1 min-w-[112px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden'
 			>
-				<Image source={icon} tintColor='#151312' className='size-5' />
-				<Text className='text-secondary text-base font-semibold ml-2'>
+				<Image source={icon} tintColor='#151312' className='size-6' />
+				<Text className='text-secondary text-base font-bold ml-2'>
 					{title}
 				</Text>
 			</ImageBackground>
@@ -20,7 +20,7 @@ const TabIcon = ({ focused, icon, title }: any) => {
 
 	return (
 		<View className='size-full justify-center items-center mt-4 rounded-full'>
-			<Image source={icon} className='size-5' tintColor='#ffffff' />
+			<Image source={icon} className='size-6' tintColor='#ffffff' />
 		</View>
 	);
 };
@@ -35,6 +35,7 @@ export default function TabsLayout() {
 					height: '100%',
 					justifyContent: 'center',
 					alignItems: 'center',
+					
 				},
 				tabBarStyle: {
 					backgroundColor: '#138352',
@@ -56,7 +57,7 @@ export default function TabsLayout() {
 					title: 'Home',
 					headerShown: false,
 					tabBarIcon: ({ focused }) => (
-						<TabIcon focused={focused} icon={icons.home} title='Home' />
+						<TabIcon focused={focused} icon={icons.home} title='Головна' />
 					),
 				}}
 			/>
@@ -66,7 +67,7 @@ export default function TabsLayout() {
 					title: 'Search',
 					headerShown: false,
 					tabBarIcon: ({ focused }) => (
-						<TabIcon focused={focused} icon={icons.search} title='Search' />
+						<TabIcon focused={focused} icon={icons.search} title='Пошук' />
 					),
 				}}
 			/>
@@ -76,7 +77,7 @@ export default function TabsLayout() {
 					title: 'Saved',
 					headerShown: false,
 					tabBarIcon: ({ focused }) => (
-						<TabIcon focused={focused} icon={icons.save} title='Saved' />
+						<TabIcon focused={focused} icon={icons.save} title='Обране' />
 					),
 				}}
 			/>
@@ -86,7 +87,7 @@ export default function TabsLayout() {
 					title: 'Profile',
 					headerShown: false,
 					tabBarIcon: ({ focused }) => (
-						<TabIcon focused={focused} icon={icons.person} title='Profile' />
+						<TabIcon focused={focused} icon={icons.person} title='Профіль' />
 					),
 				}}
 			/>

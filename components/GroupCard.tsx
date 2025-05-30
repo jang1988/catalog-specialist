@@ -1,23 +1,74 @@
-import { Props } from '@/types/interfaces'
+import { GroupCardProps } from '@/types/interfaces';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-export default function GroupCard({ group, isSelected = false, onPress }: Props) {
-  return (
-    <TouchableOpacity
-      className={`bg-gray-800 rounded-lg p-4 mb-4 mx-2 shadow-lg border-2 ${isSelected ? 'border-green-500' : 'border-gray-800'}`}
-      onPress={onPress}
-    >
-      <View className='w-full h-48 rounded-lg overflow-hidden mb-3'>
-        <Image
-          source={{ uri: group.img_url }}
-          className='w-full h-full'
-          resizeMode='contain'
-        />
-      </View>
-      <Text className="text-gray-300 text-lg font-bold mb-2">
-        {group.name}
-      </Text>
-    </TouchableOpacity>
-  );
+export default function GroupCard({
+	group,
+	isSelected = false,
+	onPress,
+}: GroupCardProps) {
+	return (
+		<TouchableOpacity
+			className='relative rounded-2xl overflow-hidden mb-4 mx-2'
+			onPress={onPress}
+			activeOpacity={0.5}
+		>
+			{/* Эффект неонового свечения */}
+			{isSelected && (
+				<View
+					className='absolute inset-0 rounded-2xl'
+					style={{
+						backgroundColor: 'transparent',
+						borderWidth: 1,
+						borderColor: '#138352',
+						shadowColor: '#fff',
+						shadowOffset: { width: 0, height: 0 },
+						shadowOpacity: 0.8,
+						shadowRadius: 20,
+						elevation: 20,
+						zIndex: 1,
+					}}
+				/>
+			)}
+
+			{/* Основное содержимое карточки */}
+			<View className={'relative rounded-2xl overflow-hidden'}>
+				{/* Изображение с градиентом */}
+				<View className='w-full h-48'>
+					<Image
+						source={{ uri: group.img_url }}
+						className='w-full h-full'
+						resizeMode='cover'
+					/>
+					{!isSelected && <LinearGradient
+						colors={['transparent', 'rgba(0,0,0,0.8)']}
+						locations={[0.5, 1]}
+						style={{
+							position: 'absolute',
+							bottom: 0,
+							left: 0,
+							right: 0,
+							height: '55%',
+						}}
+					/>}
+				</View>
+
+				{/* Текст с неоновым свечением */}
+				<View className='absolute bottom-0 left-0 right-0 p-4'>
+					<Text
+						className='text-white text-xl font-bold text-center'
+						style={{
+							transform: [{ translateY: 6 }],
+							textShadowColor: 'rgba(255,255,255,0.3)',
+							textShadowOffset: { width: 0, height: 0 },
+							textShadowRadius: 5,
+						}}
+					>
+						{isSelected ? '' : group.name}
+					</Text>
+				</View>
+			</View>
+		</TouchableOpacity>
+	);
 }

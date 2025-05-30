@@ -1,25 +1,21 @@
 import { icons } from '@/constants/icons';
-import React from 'react';
+import { SearchBarProps } from '@/types/interfaces'
+import React, { forwardRef } from 'react';
 import { Image, Pressable, TextInput, View } from 'react-native';
 
-interface Props {
-	onPress?: () => void;
-	placeholder: string;
-	value?: string;
-	onChangeText?: (text: string) => void;
-	editable?: boolean;
-}
 
-export default function SearchBar({
+
+export default forwardRef<TextInput, SearchBarProps>(function SearchBar({
 	onPress,
 	placeholder,
 	value,
 	onChangeText,
 	editable = true,
-}: Props) {
+	autoFocus = false,
+}, ref) {
 	return (
 		<Pressable onPress={onPress} disabled={editable}>
-			<View className='flex-row items-center bg-dark-200 rounded-full px-5 py-4'>
+			<View className='flex-row items-center bg-dark-100 rounded-full px-5 py-4'>
 				<Image
 					source={icons.search}
 					className='size-5'
@@ -27,6 +23,7 @@ export default function SearchBar({
 					tintColor='#ab8bff'
 				/>
 				<TextInput
+					ref={ref}
 					pointerEvents={editable ? 'auto' : 'none'}
 					placeholder={placeholder}
 					placeholderTextColor='#a8b5db'
@@ -34,8 +31,9 @@ export default function SearchBar({
 					value={value}
 					onChangeText={onChangeText}
 					editable={editable}
+					autoFocus={autoFocus}
 				/>
 			</View>
 		</Pressable>
 	);
-}
+});
