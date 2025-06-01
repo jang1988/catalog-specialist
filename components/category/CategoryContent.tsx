@@ -1,7 +1,7 @@
 import GroupCard from '@/components/GroupCard';
 import ProductCard from '@/components/ProductCard';
 import { CategoryContentProps } from '@/types/interfaces';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -11,12 +11,11 @@ import {
 } from 'react-native';
 import Animated, {
 	FadeIn,
+	FadeInDown,
 	FadeOut,
 	LinearTransition,
 } from 'react-native-reanimated';
-
 const AnimatedView = Animated.createAnimatedComponent(View);
-
 export const CategoryContent = ({
 	loading,
 	error,
@@ -27,121 +26,36 @@ export const CategoryContent = ({
 	onRetry,
 }: CategoryContentProps) => {
 	const scrollViewRef = useRef<ScrollView>(null);
-	const isMountedRef = useRef(true);
 
-	// Очистка при размонтировании
 	useEffect(() => {
-		return () => {
-			isMountedRef.current = false;
-		};
-	}, []);
-
-	// Мемоизация поиска выбранной группы
-	const selectedGroupData = useMemo(() => {
-		if (!selectedGroup || !groups.length) return null;
-		return groups.find(g => g.id === selectedGroup) || null;
-	}, [selectedGroup, groups]);
-
-	// Мемоизация обработчика сброса выбора группы
-	const handleGroupDeselect = useCallback(() => {
-		onGroupPress(null);
-	}, [onGroupPress]);
-
-	// Оптимизированный обработчик выбора группы
-	const handleGroupPress = useCallback((groupId: string) => {
-		onGroupPress(groupId);
-	}, [onGroupPress]);
-
-	// Безопасный скролл
-	useEffect(() => {
-		// Простой скролл без дополнительных проверок
 		scrollViewRef.current?.scrollTo({ y: 0, animated: false });
 	}, [selectedGroup]);
 
-	// Мемоизация списка групп для предотвращения лишних рендеров
-	const groupsList = useMemo(() => {
-		if (selectedGroupData) {
-			return (
-				<AnimatedView
-					key={`selected-${selectedGroupData.id}`}
-					entering={FadeIn.duration(200)}
-					exiting={FadeOut.duration(150)}
-					layout={LinearTransition.springify().damping(15)}
-				>
-					<GroupCard
-						group={selectedGroupData}
-						isSelected={true}
-						onPress={handleGroupDeselect}
-					/>
-				</AnimatedView>
-			);
-		}
+	const selectedGroupData = useMemo(() => {
+		return selectedGroup
+			? groups.find(g => g.id === selectedGroup) ?? null
+			: null;
+	}, [selectedGroup, groups]);
 
-		return groups.map(group => (
-			<AnimatedView
-				key={`group-${group.id}`}
-				entering={FadeIn.duration(200).delay(groups.indexOf(group) * 50)}
-				exiting={FadeOut.duration(150)}
-				layout={LinearTransition.springify().damping(15)}
-			>
-				<GroupCard
-					group={group}
-					isSelected={false}
-					onPress={() => handleGroupPress(group.id)}
-				/>
-			</AnimatedView>
-		));
-	}, [groups, selectedGroupData, handleGroupDeselect, handleGroupPress]);
-
-	// Мемоизация списка продуктов
-	const productsList = useMemo(() => {
-		if (products.length === 0) {
-			return selectedGroup ? (
-				<AnimatedView entering={FadeIn.duration(300)}>
-					<Text className='text-gray-400 text-center mt-8'>
-						Товары в этой категории не найдены
-					</Text>
-				</AnimatedView>
-			) : null;
-		}
-
-		return (
-			<AnimatedView 
-				entering={FadeIn.duration(300)} 
-				layout={LinearTransition.springify().damping(17)}
-			>
-				<Text className='text-white text-xl font-bold mt-0 mb-4'>
-					Товари в категорії
-				</Text>
-				<View className='flex-row flex-wrap justify-center gap-6'>
-					{products.map(prod => (
-						<ProductCard key={`product-${prod.id}`} {...prod} />
-					))}
-				</View>
-			</AnimatedView>
-		);
-	}, [products, selectedGroup]);
-
-	// Состояние загрузки - без лишних анимаций
 	if (loading) {
 		return (
 			<View className='flex-1 justify-center items-center'>
 				<ActivityIndicator size='large' color='#3B82F6' />
-				<Text className='text-white mt-4'>Загрузка...</Text>
+				<Text className='text-white mt-4 text-base'>Загрузка...</Text>
 			</View>
 		);
 	}
 
-	// Состояние ошибки - без лишних анимаций
 	if (error) {
 		return (
-			<View className='flex-1 justify-center items-center'>
-				<Text className='text-red-400 text-lg mb-4'>{error}</Text>
+			<View className='flex-1 justify-center items-center px-4'>
+				<Text className='text-red-400 text-lg mb-6 text-center'>{error}</Text>
 				<TouchableOpacity
-					className='bg-blue-600 px-6 py-3 rounded-full'
+					className='bg-blue-600 px-8 py-3 rounded-full active:bg-blue-700'
 					onPress={onRetry}
+					activeOpacity={0.8}
 				>
-					<Text className='text-white font-semibold'>Повторить</Text>
+					<Text className='text-white font-semibold text-base'>Повторить</Text>
 				</TouchableOpacity>
 			</View>
 		);
@@ -150,14 +64,78 @@ export const CategoryContent = ({
 	return (
 		<ScrollView
 			ref={scrollViewRef}
-			contentContainerStyle={{ padding: 16, paddingBottom: 50 }}
+			contentContainerStyle={{
+				paddingVertical: 12,
+				paddingBottom: 60,
+			}}
 			showsVerticalScrollIndicator={false}
-			removeClippedSubviews={true} // Оптимизация для больших списков
 		>
-			<AnimatedView layout={LinearTransition.springify().damping(15)} className='space-y-4'>
-				{groupsList}
-			</AnimatedView>
-			{productsList}
+			<View className='space-y-3'>
+				{selectedGroupData ? (
+					<AnimatedView
+						key={`selected-${selectedGroupData.id}`}
+						entering={FadeIn.duration(300).springify().damping(12)}
+						exiting={FadeOut.duration(250)}
+						layout={LinearTransition.duration(300).springify().damping(12)}
+					>
+						<GroupCard
+							group={selectedGroupData}
+							isSelected={true}
+							onPress={() => onGroupPress(null)}
+						/>
+					</AnimatedView>
+				) : (
+					groups.map((group, index) => (
+						<AnimatedView
+							key={`group-${group.id}`}
+							entering={FadeIn.duration(400)
+								.delay(index * 80)
+								.springify()
+								.damping(14)}
+							exiting={FadeOut.duration(200)}
+							layout={LinearTransition.duration(300).springify().damping(14)}
+						>
+							<GroupCard
+								key={group.id}
+								group={group}
+								isSelected={false}
+								onPress={() => onGroupPress(group.id)}
+							/>
+						</AnimatedView>
+					))
+				)}
+			</View>
+
+			{selectedGroup && products.length === 0 && (
+				<Text className='text-gray-400 text-center mt-8 text-base'>
+					Товары в этой категории не найдены
+				</Text>
+			)}
+
+			{products.length > 0 && (
+				<Animated.View
+					entering={FadeIn.duration(300)}
+					layout={LinearTransition.springify().damping(17)}
+				>
+					<View className='mt-6'>
+						<Text className='text-white text-xl font-bold mb-4 ml-4'>
+							Товари в категорії
+						</Text>
+						<View className='flex-row flex-wrap justify-center gap-4'>
+							{products.map((product, index) => (
+								<Animated.View
+									key={product.id}
+									entering={FadeInDown.duration(300).delay(index * 20)}
+									layout={LinearTransition.springify().damping(17)}
+									className='w-[45%]'
+								>
+									<ProductCard {...product} />
+								</Animated.View>
+							))}
+						</View>
+					</View>
+				</Animated.View>
+			)}
 		</ScrollView>
 	);
 };

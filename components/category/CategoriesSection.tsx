@@ -45,8 +45,8 @@ export default function CategoriesSection({
 							animated: true,
 						});
 					}, 300);
-				}, 800);
-			}, 3000);
+				}, 700);
+			}, 1000);
 		}
 	}, [loading, data]);
 

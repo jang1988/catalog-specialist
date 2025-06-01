@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Easing } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CategoryHeader } from '@/components/category/CategoryHeader';
 import { CategoryContent } from '@/components/category/CategoryContent';
@@ -9,15 +9,7 @@ import {
   fetchGroupById,
   fetchProductsByGroup,
 } from '@/utils/useDataFetch';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-  withSequence,
-} from 'react-native-reanimated';
 
-// Константы для анимации
 const ANIMATION_CONFIG = {
   HEADER: {
     OPACITY: {
@@ -46,7 +38,6 @@ export default function Category() {
   const { id } = useLocalSearchParams();
   const categoryId = Array.isArray(id) ? id[0] : id;
 
-  // Состояния компонента
   const [groups, setGroups] = useState<GroupItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState('');
@@ -55,52 +46,23 @@ export default function Category() {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [groupTable, setGroupTable] = useState<string | null>(null);
 
-  // Анимационные переменные
-  const headerOpacity = useSharedValue(0);
-  const contentTranslateY = useSharedValue(50);
-  const contentScale = useSharedValue(1);
+  const loadGroupProducts = useCallback(async (groupId: string | null) => {
+    if (!groupTable) return;
 
-  // Стили анимации
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: headerOpacity.value,
-  }));
-
-  const animatedContentStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: contentTranslateY.value },
-      { scale: contentScale.value },
-    ],
-  }));
-
-  // Инициализация анимации при монтировании
-  useEffect(() => {
-    const startInitialAnimations = () => {
-      headerOpacity.value = withTiming(1, ANIMATION_CONFIG.HEADER.OPACITY);
-      contentTranslateY.value = withTiming(
-        0, 
-        ANIMATION_CONFIG.CONTENT.ENTRANCE.translateY
+    try {
+      setError(null);
+      const productData = await fetchProductsByGroup(
+        groupTable,
+        groupId || undefined
       );
-    };
-
-    startInitialAnimations();
-  }, []);
-
-  // Анимация при смене группы
-  useEffect(() => {
-    if (selectedGroup) {
-      const runGroupChangeAnimation = () => {
-        contentScale.value = withSequence(
-          withTiming(0.95, ANIMATION_CONFIG.CONTENT.GROUP_CHANGE.scale),
-          withTiming(1, ANIMATION_CONFIG.CONTENT.GROUP_CHANGE.scale)
-        );
-      };
-
-      runGroupChangeAnimation();
+      setProducts(productData);
+    } catch (err) {
+      console.error('Ошибка загрузки продуктов:', err);
+      setError('Не удалось загрузить товары');
     }
-  }, [selectedGroup]);
+  }, [groupTable]);
 
-  // Загрузка данных категории и групп
-  const fetchGroupsAndProducts = useCallback(async () => {
+  const loadCategoryData = useCallback(async () => {
     if (!categoryId) {
       setError('ID категории не указан');
       setLoading(false);
@@ -111,10 +73,12 @@ export default function Category() {
       setLoading(true);
       setError(null);
 
-      const categoryName = await fetchCategoryById(categoryId);
-      setCategory(categoryName);
+      const [categoryName, groupsResult] = await Promise.all([
+        fetchCategoryById(categoryId),
+        fetchGroupById(categoryId)
+      ]);
 
-      const groupsResult = await fetchGroupById(categoryId);
+      setCategory(categoryName);
       setGroups(groupsResult.data);
       setGroupTable(groupsResult.table);
 
@@ -122,82 +86,54 @@ export default function Category() {
         const productData = await fetchProductsByGroup(groupsResult.table);
         setProducts(productData);
       }
-    } catch (err: any) {
-      setError(err.message || 'Ошибка загрузки данных');
+    } catch (err) {
+      console.error('Ошибка загрузки данных категории:', err);
+      setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
     } finally {
       setLoading(false);
     }
   }, [categoryId]);
 
-  // Загрузка товаров для выбранной группы
-  const fetchProducts = useCallback(async () => {
-    if (groupTable) {
-      try {
-        const productData = await fetchProductsByGroup(
-          groupTable,
-          selectedGroup || undefined
-        );
-        setProducts(productData);
-      } catch (err) {
-        setError('Не удалось загрузить товары');
-      }
-    }
-  }, [groupTable, selectedGroup]);
-
-  // Эффекты для загрузки данных
-  useEffect(() => {
-    fetchGroupsAndProducts();
-  }, [fetchGroupsAndProducts]);
+  const handleGroupSelection = useCallback((groupId: string | null) => {
+    if (groupId === selectedGroup) return;
+    setSelectedGroup(groupId);
+    loadGroupProducts(groupId);
+  }, [selectedGroup, loadGroupProducts]);
 
   useEffect(() => {
-    if (groupTable) {
-      fetchProducts();
-    }
-  }, [groupTable, selectedGroup, fetchProducts]);
+    loadCategoryData();
+  }, [loadCategoryData]);
 
-  const handleBackPress = () => {
+  const handleBackPress = useCallback(() => {
     if (selectedGroup) {
-      setSelectedGroup(null);
+      handleGroupSelection(null);
     } else {
       router.back();
     }
-  };
+  }, [selectedGroup, handleGroupSelection, router]);
+
+  
 
   return (
-    <View style={styles.container}>
-      {/* Анимированная шапка */}
-      <Animated.View style={animatedHeaderStyle}>
-        <CategoryHeader
-          selectedGroup={selectedGroup}
-          category={category}
-          groups={groups}
-          onBackPress={handleBackPress}
-        />
-      </Animated.View>
-
-      {/* Анимированное содержимое */}
-      <Animated.View style={[styles.content, animatedContentStyle]}>
+    <View className='flex-1 bg-primary'>
+      <CategoryHeader
+        selectedGroup={selectedGroup}
+        category={category}
+        groups={groups}
+        onBackPress={handleBackPress}
+      />
+      
+      <View className='flex-1 p-2'>
         <CategoryContent
           loading={loading}
           error={error}
           selectedGroup={selectedGroup}
           groups={groups}
           products={products}
-          onGroupPress={setSelectedGroup}
-          onRetry={fetchGroupsAndProducts}
+          onGroupPress={handleGroupSelection}
+          onRetry={loadCategoryData}
         />
-      </Animated.View>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1F2937',
-  },
-  content: {
-    flex: 1,
-    padding: 8,
-  },
-});

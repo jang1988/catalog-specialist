@@ -39,7 +39,7 @@ export default function ProductCard({
       asChild
     >
       {/* Основной контейнер карточки */}
-      <TouchableOpacity className='w-[45%]'>
+      <TouchableOpacity>
         {/* Изображение товара */}
         <Image
           source={{

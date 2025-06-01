@@ -20,8 +20,6 @@ export default function Index() {
 	const recomends = useFetch(fetchRecomends);
 	const categories = useFetch(fetchCategories);
 
-	// Хендлеры для автоматической прокрутки карусели
-	// const handlers = useAutoScroll(categories.data ?? [], carouselRef);
 	return (
 		<View className='flex-1 bg-primary'>
 			{/* Фоновое изображение */}
