@@ -71,7 +71,7 @@ export const ProductInfo = ({
 						</Text>
 						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
 						<Text className='text-white text-base font-semibold'>
-							{product?.bar} bar
+							{product?.bar} бар
 						</Text>
 					</View>
 				)}
@@ -183,7 +183,7 @@ export const ProductInfo = ({
 						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
 
 						<Text className='text-white text-base font-semibold'>
-							{actualVariant.signal_type} мкм
+							{actualVariant.signal_type}
 						</Text>
 					</View>
 				)}
@@ -294,6 +294,34 @@ export const ProductInfo = ({
 
 						<Text className='text-white text-base font-semibold'>
 							{actualVariant.stock}
+						</Text>
+					</View>
+				)}
+
+				{product?.torque && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Крутний момент
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							до {product.torque}
+						</Text>
+					</View>
+				)}
+
+				{product?.site && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Площадка для кріплення
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{product.site}
 						</Text>
 					</View>
 				)}

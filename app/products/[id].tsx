@@ -46,6 +46,12 @@ export default function ProductDetails() {
 		selectedPassage,
 		selectedSealing,
 		selectedDisc,
+		selectedModeAction,
+		selectedThreadPapa,
+		selectedCollet,
+		selectedThreadMama,
+		selectedDiameterTree,
+		selectedDiameterTube,
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -66,6 +72,12 @@ export default function ProductDetails() {
 		setSelectedPassage,
 		setSelectedSealing,
 		setSelectedDisc,
+		setSelectedModeAction,
+		setSelectedThreadPapa,
+		setSelectedCollet,
+		setSelectedThreadMama,
+		setSelectedDiameterTree,
+		setSelectedDiameterTube,
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,
@@ -94,6 +106,12 @@ export default function ProductDetails() {
 	const compatiblePassages = getCompatibleValues('passage');
 	const compatibleSealing = getCompatibleValues('sealing');
 	const compatibleDisc = getCompatibleValues('disc');
+	const compatibleModeActions = getCompatibleValues('mode_action');
+	const compatibleThreadsPapa = getCompatibleValues('thread_papa');
+	const compatibleCollet = getCompatibleValues('collet');
+	const compatibleThreadMama = getCompatibleValues('thread_mama');
+	const compatibleDiameterTree = getCompatibleValues('diameter_tree');
+	const compatibleDiameterTube = getCompatibleValues('diameter_tube');
 
 	// Display loading indicator
 	if (loading) {
@@ -286,13 +304,6 @@ export default function ProductDetails() {
 					/>
 
 					<ProductOption
-						title='Тип'
-						options={compatibleAngleTypes}
-						selectedOption={selectedAngleType}
-						onSelect={setSelectedAngleType}
-					/>
-
-					<ProductOption
 						title='Зусилля'
 						options={compatibleEfforts}
 						selectedOption={selectedEffort}
@@ -311,6 +322,55 @@ export default function ProductDetails() {
 						options={compatibleDisc}
 						selectedOption={selectedDisc}
 						onSelect={setSelectedDisc}
+					/>
+
+					<ProductOption
+						title='Спосіб дії'
+						options={compatibleModeActions}
+						selectedOption={selectedModeAction}
+						onSelect={setSelectedModeAction}
+					/>
+
+					<ProductOption
+						title='Цанга під трубку'
+						options={compatibleCollet}
+						selectedOption={selectedCollet}
+						onSelect={setSelectedCollet}
+					/>
+
+					<ProductOption
+						title='Зовнішня різьба'
+						options={compatibleThreadsPapa}
+						selectedOption={selectedThreadPapa}
+						onSelect={setSelectedThreadPapa}
+					/>
+
+					<ProductOption
+						title='Внутрішня різьба'
+						options={compatibleThreadMama}
+						selectedOption={selectedThreadMama}
+						onSelect={setSelectedThreadMama}
+					/>
+
+					<ProductOption
+						title='Діаметр "ялинки"'
+						options={compatibleDiameterTree}
+						selectedOption={selectedDiameterTree}
+						onSelect={setSelectedDiameterTree}
+					/>
+
+					<ProductOption
+						title='Тип'
+						options={compatibleAngleTypes}
+						selectedOption={selectedAngleType}
+						onSelect={setSelectedAngleType}
+					/>
+
+					<ProductOption
+						title='Діаметр трубки'
+						options={compatibleDiameterTube}
+						selectedOption={selectedDiameterTube}
+						onSelect={setSelectedDiameterTube}
 					/>
 
 					<DeliveryInfo

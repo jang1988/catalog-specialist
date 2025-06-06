@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, View } from 'react-native';
 
+
 // Компоненты и утилиты
 import SearchBar from '@/components/SearchBar';
 import { images } from '@/constants/images';
-// import { useAutoScroll } from '@/utils/useAutoScroll';
 import { fetchCategories, fetchRecomends } from '@/utils/useDataFetch';
 import useFetch from '@/utils/useFetch';
 
@@ -27,9 +27,9 @@ export default function Index() {
 
 			{/* Основной скролл контейнер */}
 			<ScrollView
-				className='flex-1 px-5'
+				className='flex-1'
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{ minHeight: '100%', paddingBottom: 10 }}
+				contentContainerStyle={{paddingBottom: 60}}
 			>
 				{/* Логотип в шапке */}
 				<HeaderLogo />
@@ -50,7 +50,7 @@ export default function Index() {
 					error={categories.error}
 				/>
 
-				{/* Секция с рекомендациями */}
+				{/* Секция с рекомендациями */}	
 				<RecommendsSection
 					data={recomends.data ?? []}
 					loading={recomends.loading}

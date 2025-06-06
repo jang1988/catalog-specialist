@@ -11,19 +11,21 @@ export interface Product {
 	mode_action?: string;
 	iso?: string;
 	view?: string;
+	torque?: string;
+	site?: string;
 	desc?: string;
 	variants?: Variant[];
 }
 
 export interface Variant {
-  model: string;
-  price: string;
-  thread: string;
-  voltage: string;
-  type: string;
-  lever: string;
-  delivery?: string;
-  flow?: string;
+	model: string;
+	price: string;
+	thread: string;
+	voltage: string;
+	type: string;
+	lever: string;
+	delivery?: string;
+	flow?: string;
 	productivity?: string;
 	power?: string;
 	pressure?: string;
@@ -45,6 +47,12 @@ export interface Variant {
 	accession?: string;
 	passage?: string;
 	sealing?: string;
+	mode_action?: string;
+	thread_papa?: string;
+	collet?: string;
+	thread_mama?: string;
+	diameter_tree?: string;
+	diameter_tube?: string;
 	disc?: string;
 }
 
@@ -55,8 +63,8 @@ export interface GroupItem {
 }
 
 export interface GroupResponse {
-  data: GroupItem[];
-  table: string | null;
+	data: GroupItem[];
+	table: string | null;
 }
 
 export interface CategoryContentProps {

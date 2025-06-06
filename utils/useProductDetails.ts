@@ -33,6 +33,12 @@ export function useProductDetails(
 	const [selectedPassage, setSelectedPassage] = useState('');
 	const [selectedSealing, setSelectedSealing] = useState('');
 	const [selectedDisc, setSelectedDisc] = useState('');
+	const [selectedModeAction, setSelectedModeAction] = useState('');
+	const [selectedThreadPapa, setSelectedThreadPapa] = useState('');
+	const [selectedCollet, setSelectedCollet] = useState('');
+	const [selectedThreadMama, setSelectedThreadMama] = useState('');
+	const [selectedDiameterTree, setSelectedDiameterTree] = useState('');
+	const [selectedDiameterTube, setSelectedDiameterTube] = useState('');
 
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
 
@@ -100,6 +106,12 @@ export function useProductDetails(
 			passage: selectedPassage,
 			sealing: selectedSealing,
 			disc: selectedDisc,
+			mode_action: selectedModeAction,
+			thread_papa: selectedThreadPapa,
+			collet: selectedCollet,
+			thread_mama: selectedThreadMama,
+			diameter_tree: selectedDiameterTree,
+			diameter_tube: selectedDiameterTube,
 		};
 
 		// Проверка соответствия варианта заданным критериям
@@ -118,6 +130,31 @@ export function useProductDetails(
 		// ищем вариант с подходящим piston_diameter и любым stroke_length
 		if (selectedPistonDiameter) {
 			const criteriaWithoutStroke = { ...searchCriteria, stroke_length: '' };
+			found = product.variants.find(v =>
+				matchesCriteria(v, criteriaWithoutStroke)
+			);
+			if (found) return found;
+		}
+
+		if (selectedCollet) {
+			const criteriaWithoutStroke = {
+				...searchCriteria,
+				thread_papa: '',
+				thread_mama: '',
+				diameter_tree: '',
+			};
+			found = product.variants.find(v =>
+				matchesCriteria(v, criteriaWithoutStroke)
+			);
+			if (found) return found;
+		}
+
+		if (selectedThreadPapa) {
+			const criteriaWithoutStroke = {
+				...searchCriteria,
+				thread_mama: '',
+				diameter_tree: '',
+			};
 			found = product.variants.find(v =>
 				matchesCriteria(v, criteriaWithoutStroke)
 			);
@@ -154,6 +191,12 @@ export function useProductDetails(
 		selectedPassage,
 		selectedSealing,
 		selectedDisc,
+		selectedModeAction,
+		selectedThreadPapa,
+		selectedCollet,
+		selectedThreadMama,
+		selectedDiameterTree,
+		selectedDiameterTube,
 	]);
 
 	// Синхронизация состояния перед рендерингом
@@ -204,26 +247,60 @@ export function useProductDetails(
 			setSelectedSealing(computedVariant.sealing || '');
 		if (computedVariant.disc !== selectedDisc)
 			setSelectedDisc(computedVariant.disc || '');
+		if (computedVariant.mode_action !== selectedModeAction)
+			setSelectedModeAction(computedVariant.mode_action || '');
+		if (computedVariant.thread_papa !== selectedThreadPapa)
+			setSelectedThreadPapa(computedVariant.thread_papa || '');
+		if (computedVariant.collet !== selectedCollet)
+			setSelectedCollet(computedVariant.collet || '');
+		if (computedVariant.thread_mama !== selectedThreadMama)
+			setSelectedThreadMama(computedVariant.thread_mama || '');
+		if (computedVariant.diameter_tree !== selectedDiameterTree)
+			setSelectedDiameterTree(computedVariant.diameter_tree || '');
+		if (computedVariant.diameter_tube !== selectedDiameterTube)
+			setSelectedDiameterTube(computedVariant.diameter_tube || '');
 	}, [computedVariant]);
 
 	// Получить совместимые значения для конкретного поля на основе текущих выборов
 	const getCompatibleValues = <K extends keyof Variant>(field: K): string[] => {
+		// Проверяем наличие вариантов продукта
 		if (!product?.variants) return [];
 
 		// Поля, которые всегда показывают все доступные значения
-		const alwaysShowAll = ['thread', 'piston_diameter'];
+		// независимо от других выборов пользователя
+		const alwaysShowAll = [
+			'thread',
+			'piston_diameter',
+			'collet',
+			'thread_papa',
+		];
 
-		if (alwaysShowAll.includes(field as string)) {
+		// Проверяем наличие полей collet и thread_papa в вариантах
+		const hasCollet = product.variants.some(v => v['collet']);
+		const hasThreadPapa = product.variants.some(v => v['thread_papa']);
+
+		// Если есть и collet, и thread_papa, исключаем thread_papa из списка
+		// полей, которые всегда показывают все значения
+		const filteredFields =
+			hasCollet && hasThreadPapa
+				? alwaysShowAll.filter(f => f !== 'thread_papa')
+				: alwaysShowAll;
+
+		// Если текущее поле входит в список полей, которые всегда показывают все значения
+		if (filteredFields.includes(field as string)) {
+			// Возвращаем все уникальные значения для этого поля
 			return Array.from(
 				new Set(product.variants.map(v => v[field] || '').filter(Boolean))
 			);
 		}
 
-		// Фильтруем значения на основе текущих выборов
+		// Для остальных полей фильтруем значения на основе текущих выборов пользователя
 		return Array.from(
 			new Set(
 				product.variants
+					// Фильтруем варианты, которые соответствуют всем текущим выборам
 					.filter(v =>
+						// Проверяем каждую пару ключ-значение из текущих выборов
 						Object.entries({
 							voltage: selectedVoltage,
 							type: selectedType,
@@ -245,12 +322,23 @@ export function useProductDetails(
 							passage: selectedPassage,
 							sealing: selectedSealing,
 							disc: selectedDisc,
+							mode_action: selectedModeAction,
+							thread_papa: selectedThreadPapa,
+							collet: selectedCollet,
+							thread_mama: selectedThreadMama,
+							diameter_tree: selectedDiameterTree,
+							diameter_tube: selectedDiameterTube,
 						}).every(
 							([key, val]) =>
+								// Условие совместимости: либо это текущее поле (которое мы ищем),
+								// либо значение не выбрано (пустая строка),
+								// либо значение в варианте совпадает с выбранным
 								key === field || val === '' || v[key as keyof Variant] === val
 						)
 					)
+					// Извлекаем значения для нужного поля из отфильтрованных вариантов
 					.map(v => v[field] || '')
+					// Убираем пустые значения
 					.filter(Boolean)
 			)
 		);
@@ -331,6 +419,12 @@ export function useProductDetails(
 		selectedPassage,
 		selectedSealing,
 		selectedDisc,
+		selectedModeAction,
+		selectedThreadPapa,
+		selectedCollet,
+		selectedThreadMama,
+		selectedDiameterTree,
+		selectedDiameterTube,
 
 		// Сеттеры
 		setSelectedVoltage,
@@ -353,6 +447,12 @@ export function useProductDetails(
 		setSelectedPassage,
 		setSelectedSealing,
 		setSelectedDisc,
+		setSelectedModeAction,
+		setSelectedThreadPapa,
+		setSelectedCollet,
+		setSelectedThreadMama,
+		setSelectedDiameterTree,
+		setSelectedDiameterTube,
 
 		// Вспомогательные методы
 		getCompatibleValues,

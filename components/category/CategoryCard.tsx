@@ -1,16 +1,21 @@
+import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function CategoryCard({ id, name, img_url }: any) {
+	const blurhash = 'L0000y%M00t7_NM{Rjof00ayt7of';
+
 	return (
 		<Link href={`/categories/${id}`} asChild>
 			<TouchableOpacity className='w-40 items-center mx-2'>
 				<View className='w-40 h-28 rounded-lg overflow-hidden shadow'>
 					<Image
-						source={{ uri: img_url }}
-						className='w-full h-full'
-						resizeMode='cover'
+						source={img_url}
+						style={{ width: '100%', height: '100%' }}
+						placeholder={{ blurhash }}
+						contentFit='cover'
+						transition={1000}
 					/>
 				</View>
 				<Text

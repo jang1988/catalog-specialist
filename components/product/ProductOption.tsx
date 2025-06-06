@@ -17,7 +17,7 @@ export const ProductOption = ({
 
   return (
     <View className='mb-4'>
-      <Text className='text-white text-xl font-semibold mb-2'>{title}:</Text>
+      <Text className='text-white text-xl font-semibold mb-2'>{title}</Text>
       <View className='flex-row flex-wrap gap-2'>
         {options.map(option => (
           <TouchableOpacity

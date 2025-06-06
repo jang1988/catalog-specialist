@@ -14,7 +14,7 @@ export default forwardRef<TextInput, SearchBarProps>(function SearchBar({
 	autoFocus = false,
 }, ref) {
 	return (
-		<Pressable onPress={onPress} disabled={editable}>
+		<Pressable onPress={onPress} disabled={editable} className='px-5'>
 			<View className='flex-row items-center bg-dark-100 rounded-full px-5 py-4'>
 				<Image
 					source={icons.search}

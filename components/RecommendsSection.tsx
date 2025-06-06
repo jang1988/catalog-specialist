@@ -1,5 +1,5 @@
-import ProductCard from '@/components/ProductCard';
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import ProductCard from '@/components/ProductCard'
+import { ActivityIndicator, FlatList, Text, View } from 'react-native'
 
 export default function RecommendsSection({
 	data,
@@ -25,8 +25,8 @@ export default function RecommendsSection({
 		);
 
 	return (
-		<View>
-			<Text className='text-white text-lg font-bold mt-5 mb-3'>
+		<> 
+			<Text className='text-white text-lg font-bold mt-5 mb-3 px-5'>
 				РЕКОМЕНДОВАНІ
 			</Text>
 			<FlatList
@@ -34,14 +34,11 @@ export default function RecommendsSection({
 				renderItem={({ item }) => <ProductCard {...item} />}
 				keyExtractor={item => item.id.toString()}
 				numColumns={2}
-				columnWrapperStyle={{
-					justifyContent: 'center',
-					gap: 20,
-					marginBottom: 10,
-				}}
-				className='mt-2 pb-32'
+				columnWrapperStyle={{ justifyContent: 'center', gap: 16 }}
+				showsVerticalScrollIndicator={false}
 				scrollEnabled={false}
+				nestedScrollEnabled={true}
 			/>
-		</View>
+		</>
 	);
 }

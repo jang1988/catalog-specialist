@@ -4,17 +4,18 @@ import { supabase } from '@/utils/supabase';
 // Константы для конфигурации
 const PRODUCT_TABLES = [
 	'distributors_card',
-	'compressors_card', 
+	'compressors_card',
 	'mainline_card',
 	'air_preparation_card',
 	'cylinders_card',
 	'vibrators_card',
-	'valves_card'
+	'valves_card',
+	'fittings_card',
 ] as const;
 
 const GROUP_TABLES = [
 	'group_air_preparation',
-	'group_compressors', 
+	'group_compressors',
 	'group_convert',
 	'group_cylinders',
 	'group_distributors',
@@ -22,7 +23,7 @@ const GROUP_TABLES = [
 	'group_mainline',
 	'group_plc_sensors',
 	'group_valves',
-	'group_vibrators'
+	'group_vibrators',
 ] as const;
 
 // Маппинг коротких имен таблиц к полным именам
@@ -33,16 +34,19 @@ const TABLE_MAPPING = {
 	air_preparation: 'air_preparation_card',
 	cylinders: 'cylinders_card',
 	vibrators: 'vibrators_card',
-	valves: 'valves_card'
+	valves: 'valves_card',
+	fittings: 'fittings_card',
 } as const;
 
 type TableKey = keyof typeof TABLE_MAPPING;
-type ProductTable = typeof PRODUCT_TABLES[number];
+type ProductTable = (typeof PRODUCT_TABLES)[number];
 
 // Универсальная функция для обработки ошибок
 const handleError = (operation: string, error: unknown): never => {
 	console.error(`Error in ${operation}:`, error);
-	throw error instanceof Error ? error : new Error(`Не удалось выполнить ${operation}`);
+	throw error instanceof Error
+		? error
+		: new Error(`Не удалось выполнить ${operation}`);
 };
 
 // Универсальная функция для валидации ID
@@ -55,7 +59,9 @@ const validateId = (id: string, fieldName: string = 'ID'): void => {
 /**
  * Загружает список категорий из базы данных
  */
-export const fetchCategories = async (search: string = ''): Promise<Array<any>> => {
+export const fetchCategories = async (
+	search: string = ''
+): Promise<Array<any>> => {
 	try {
 		const { data, error } = await supabase
 			.from('categories')
@@ -75,7 +81,7 @@ export const fetchCategories = async (search: string = ''): Promise<Array<any>> 
  */
 export const fetchCategoryById = async (id: string): Promise<string> => {
 	validateId(id, 'ID категории');
-	
+
 	try {
 		const { data, error } = await supabase
 			.from('categories')
@@ -95,7 +101,9 @@ export const fetchCategoryById = async (id: string): Promise<string> => {
 /**
  * Загружает список рекомендуемых товаров
  */
-export const fetchRecomends = async (search: string = ''): Promise<Array<any>> => {
+export const fetchRecomends = async (
+	search: string = ''
+): Promise<Array<any>> => {
 	try {
 		const { data, error } = await supabase
 			.from('recomend_card')
@@ -115,12 +123,12 @@ export const fetchRecomends = async (search: string = ''): Promise<Array<any>> =
  */
 const resolveTableName = (table?: string): ProductTable => {
 	if (!table) return 'distributors_card';
-	
+
 	// Проверяем прямое совпадение с полным именем
 	if (PRODUCT_TABLES.includes(table as ProductTable)) {
 		return table as ProductTable;
 	}
-	
+
 	// Проверяем маппинг коротких имен
 	const shortName = table.replace('_card', '') as TableKey;
 	return TABLE_MAPPING[shortName] || 'distributors_card';
@@ -130,14 +138,14 @@ const resolveTableName = (table?: string): ProductTable => {
  * Загружает информацию о товаре по его ID из указанной таблицы
  */
 export const fetchProductById = async (
-	id: string, 
+	id: string,
 	table?: string
 ): Promise<Product> => {
 	validateId(id, 'ID товара');
-	
+
 	try {
 		const tableName = resolveTableName(table);
-		
+
 		const { data, error } = await supabase
 			.from(tableName)
 			.select('*')
@@ -187,25 +195,22 @@ const createProductQuery = (
 		.from(tableName)
 		.select('*')
 		.eq('group_table', groupTable);
-	
+
 	if (groupId) {
 		query.eq('group', groupId);
 	}
-	
+
 	return query;
 };
 
 /**
  * Добавляет метку таблицы к продуктам
  */
-const addTableLabel = (
-	products: any[], 
-	tableName: ProductTable
-): any[] => {
+const addTableLabel = (products: any[], tableName: ProductTable): any[] => {
 	const tableLabel = tableName.replace('_card', '');
 	return products.map(product => ({
 		...product,
-		table: tableLabel
+		table: tableLabel,
 	}));
 };
 
@@ -222,7 +227,7 @@ export const fetchProductsByGroup = async (
 
 	try {
 		// Создаем запросы для всех таблиц товаров
-		const queries = PRODUCT_TABLES.map(tableName => 
+		const queries = PRODUCT_TABLES.map(tableName =>
 			createProductQuery(tableName, table, groupId)
 		);
 
@@ -235,7 +240,7 @@ export const fetchProductsByGroup = async (
 		});
 
 		// Объединяем результаты с метками таблиц
-		return results.flatMap((result, index) => 
+		return results.flatMap((result, index) =>
 			addTableLabel(result.data || [], PRODUCT_TABLES[index])
 		);
 	} catch (error) {
@@ -247,16 +252,15 @@ export const fetchProductsByGroup = async (
  * Создает поисковый запрос для таблицы
  */
 const createSearchQuery = (tableName: ProductTable, query: string) => {
-	return supabase
-		.from(tableName)
-		.select('*')
-		.ilike('name', `%${query}%`);
+	return supabase.from(tableName).select('*').ilike('name', `%${query}%`);
 };
 
 /**
  * Выполняет поиск товаров по запросу пользователя
  */
-export const fetchSearchProducts = async (query: string): Promise<Array<any>> => {
+export const fetchSearchProducts = async (
+	query: string
+): Promise<Array<any>> => {
 	// Возвращаем пустой массив для пустого запроса вместо ошибки
 	if (!query?.trim()) {
 		return [];
@@ -264,7 +268,7 @@ export const fetchSearchProducts = async (query: string): Promise<Array<any>> =>
 
 	try {
 		// Создаем поисковые запросы для всех таблиц
-		const searchQueries = PRODUCT_TABLES.map(tableName => 
+		const searchQueries = PRODUCT_TABLES.map(tableName =>
 			createSearchQuery(tableName, query)
 		);
 
@@ -272,7 +276,7 @@ export const fetchSearchProducts = async (query: string): Promise<Array<any>> =>
 		const results = await Promise.all(searchQueries);
 
 		// Объединяем результаты с метками таблиц
-		return results.flatMap((result, index) => 
+		return results.flatMap((result, index) =>
 			addTableLabel(result.data || [], PRODUCT_TABLES[index])
 		);
 	} catch (error) {

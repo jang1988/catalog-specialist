@@ -10,29 +10,6 @@ import {
   fetchProductsByGroup,
 } from '@/utils/useDataFetch';
 
-const ANIMATION_CONFIG = {
-  HEADER: {
-    OPACITY: {
-      duration: 600,
-      easing: Easing.out(Easing.exp),
-    },
-  },
-  CONTENT: {
-    ENTRANCE: {
-      translateY: {
-        duration: 800,
-        easing: Easing.out(Easing.cubic),
-      },
-    },
-    GROUP_CHANGE: {
-      scale: {
-        duration: 200,
-        easing: Easing.out(Easing.cubic),
-      },
-    },
-  },
-};
-
 export default function Category() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
