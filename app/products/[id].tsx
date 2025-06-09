@@ -52,6 +52,7 @@ export default function ProductDetails() {
 		selectedThreadMama,
 		selectedDiameterTree,
 		selectedDiameterTube,
+		selectedColorTube,
 		setSelectedVoltage,
 		setSelectedType,
 		setSelectedLever,
@@ -78,6 +79,7 @@ export default function ProductDetails() {
 		setSelectedThreadMama,
 		setSelectedDiameterTree,
 		setSelectedDiameterTube,
+		setSelectedColorTube,
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,
@@ -112,6 +114,7 @@ export default function ProductDetails() {
 	const compatibleThreadMama = getCompatibleValues('thread_mama');
 	const compatibleDiameterTree = getCompatibleValues('diameter_tree');
 	const compatibleDiameterTube = getCompatibleValues('diameter_tube');
+	const compatibleColorTube = getCompatibleValues('color_tube');
 
 	// Display loading indicator
 	if (loading) {
@@ -246,13 +249,6 @@ export default function ProductDetails() {
 					/>
 
 					<ProductOption
-						title='Тиск'
-						options={compatibleBarValues}
-						selectedOption={selectedBarValue}
-						onSelect={setSelectedBarValue}
-					/>
-
-					<ProductOption
 						title='Ступінь фільтрації'
 						options={compatibleFiltrations}
 						selectedOption={selectedFiltration}
@@ -371,6 +367,20 @@ export default function ProductDetails() {
 						options={compatibleDiameterTube}
 						selectedOption={selectedDiameterTube}
 						onSelect={setSelectedDiameterTube}
+					/>
+
+					<ProductOption
+						title='Тиск'
+						options={compatibleBarValues}
+						selectedOption={selectedBarValue}
+						onSelect={setSelectedBarValue}
+					/>
+
+					<ProductOption
+						title='Колір'
+						options={compatibleColorTube}
+						selectedOption={selectedColorTube}
+						onSelect={setSelectedColorTube}
 					/>
 
 					<DeliveryInfo

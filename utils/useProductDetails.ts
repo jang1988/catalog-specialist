@@ -39,6 +39,7 @@ export function useProductDetails(
 	const [selectedThreadMama, setSelectedThreadMama] = useState('');
 	const [selectedDiameterTree, setSelectedDiameterTree] = useState('');
 	const [selectedDiameterTube, setSelectedDiameterTube] = useState('');
+	const [selectedColorTube, setSelectedColorTube] = useState('');
 
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
 
@@ -112,6 +113,7 @@ export function useProductDetails(
 			thread_mama: selectedThreadMama,
 			diameter_tree: selectedDiameterTree,
 			diameter_tube: selectedDiameterTube,
+			color_tube: selectedColorTube,
 		};
 
 		// Проверка соответствия варианта заданным критериям
@@ -161,6 +163,18 @@ export function useProductDetails(
 			if (found) return found;
 		}
 
+		if (selectedDiameterTube) {
+			const criteriaWithoutStroke = {
+				...searchCriteria,
+				color_tube: '',
+				bar_value: '',
+			};
+			found = product.variants.find(v =>
+				matchesCriteria(v, criteriaWithoutStroke)
+			);
+			if (found) return found;
+		}
+
 		// 3. Приоритизируем поиск по thread (если выбран)
 		if (selectedThread) {
 			found = product.variants.find(v => v.thread === selectedThread);
@@ -197,6 +211,7 @@ export function useProductDetails(
 		selectedThreadMama,
 		selectedDiameterTree,
 		selectedDiameterTube,
+		selectedColorTube,
 	]);
 
 	// Синхронизация состояния перед рендерингом
@@ -259,6 +274,8 @@ export function useProductDetails(
 			setSelectedDiameterTree(computedVariant.diameter_tree || '');
 		if (computedVariant.diameter_tube !== selectedDiameterTube)
 			setSelectedDiameterTube(computedVariant.diameter_tube || '');
+		if (computedVariant.color_tube !== selectedColorTube)
+			setSelectedColorTube(computedVariant.color_tube || '');
 	}, [computedVariant]);
 
 	// Получить совместимые значения для конкретного поля на основе текущих выборов
@@ -273,6 +290,7 @@ export function useProductDetails(
 			'piston_diameter',
 			'collet',
 			'thread_papa',
+			'diameter_tube',
 		];
 
 		// Проверяем наличие полей collet и thread_papa в вариантах
@@ -328,6 +346,7 @@ export function useProductDetails(
 							thread_mama: selectedThreadMama,
 							diameter_tree: selectedDiameterTree,
 							diameter_tube: selectedDiameterTube,
+							color_tube: selectedColorTube,
 						}).every(
 							([key, val]) =>
 								// Условие совместимости: либо это текущее поле (которое мы ищем),
@@ -425,6 +444,7 @@ export function useProductDetails(
 		selectedThreadMama,
 		selectedDiameterTree,
 		selectedDiameterTube,
+		selectedColorTube,
 
 		// Сеттеры
 		setSelectedVoltage,
@@ -453,6 +473,7 @@ export function useProductDetails(
 		setSelectedThreadMama,
 		setSelectedDiameterTree,
 		setSelectedDiameterTube,
+		setSelectedColorTube,
 
 		// Вспомогательные методы
 		getCompatibleValues,

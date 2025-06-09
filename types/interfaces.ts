@@ -53,6 +53,7 @@ export interface Variant {
 	thread_mama?: string;
 	diameter_tree?: string;
 	diameter_tube?: string;
+	color_tube?: string;
 	disc?: string;
 }
 
