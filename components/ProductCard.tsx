@@ -3,20 +3,6 @@ import { Link } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-/**
- * Компонент карточки товара для отображения в списке продуктов
- *
- * @param {string} id - Уникальный идентификатор товара
- * @param {string} name - Название товара
- * @param {string} img_url - URL изображения товара
- * @param {string[]} thread - Массив вариантов резьбы
- * @param {string[]} voltage - Массив вариантов напряжения
- * @param {string} productivity - Производительность (л/мин)
- * @param {string} power - Мощность (кВт)
- * @param {string} pressure - Давление (бар)
- * @param {string} group_table - Источник данных (таблица) для группы товаров
- * @param {string} table - Альтернативный источник данных (имеет приоритет над group_table)
- */
 export default function ProductCard({
 	id,
 	name,
@@ -25,16 +11,18 @@ export default function ProductCard({
 	voltage,
 	productivity,
 	power,
-	pressure,
+	bar,
+	bar_value,
 	group_table,
 	passage,
 	size,
-	table, // Явно указанный источник данных
+	input_voltage,
+	output_voltage,
+	table,
 }: any) {
 	// Определяем источник данных для товара:
 	// Если явно указан параметр table, используем его, иначе берем group_table
 	const tableSource = table || group_table;
-
 	return (
 		// Обертка в Link для навигации к детальной странице товара
 		<Link href={`/products/${id}?table=${tableSource}`} asChild>
@@ -58,7 +46,7 @@ export default function ProductCard({
 				{Array.isArray(thread) && thread.length > 0 && (
 					<View className='flex-row items-center justify-start gap-x-1'>
 						<Text
-							className='text-xs font-medium text-light-300 mt-1'
+							className='text-xs font-medium text-light-300 mt-0.5'
 							numberOfLines={1}
 						>
 							Різьба: {thread.join(', ')}
@@ -70,22 +58,10 @@ export default function ProductCard({
 				{Array.isArray(voltage) && voltage.length > 0 && (
 					<View className='flex-row items-center justify-between'>
 						<Text
-							className='text-xs font-medium text-light-300 mt-1'
+							className='text-xs font-medium text-light-300 mt-0.5'
 							numberOfLines={1}
 						>
 							Напруга: {voltage.join(', ')}
-						</Text>
-					</View>
-				)}
-
-				{/* Блок с информацией о производительности (если есть данные) */}
-				{productivity && (
-					<View className='flex-row items-center justify-between'>
-						<Text
-							className='text-xs font-medium text-light-300 mt-1'
-							numberOfLines={1}
-						>
-							Продуктивність: {productivity} л/хв
 						</Text>
 					</View>
 				)}
@@ -94,7 +70,7 @@ export default function ProductCard({
 				{power && (
 					<View className='flex-row items-center justify-between'>
 						<Text
-							className='text-xs font-medium text-light-300 mt-1'
+							className='text-xs font-medium text-light-300 mt-0.5'
 							numberOfLines={1}
 						>
 							Потужність: {power} кВт
@@ -102,14 +78,37 @@ export default function ProductCard({
 					</View>
 				)}
 
-				{/* Блок с информацией о давлении (если есть данные) */}
-				{pressure && (
+				{/* Блок с информацией о производительности (если есть данные) */}
+				{productivity && (
 					<View className='flex-row items-center justify-between'>
 						<Text
-							className='text-xs font-medium text-light-300 mt-1'
+							className='text-xs font-medium text-light-300 mt-0.5'
 							numberOfLines={1}
 						>
-							Тиск: {pressure} бар
+							Продуктивність: {productivity} л/хв
+						</Text>
+					</View>
+				)}
+
+				{/* Блок с информацией о давлении (если есть данные) */}
+				{bar && (
+					<View className='flex-row items-center justify-between'>
+						<Text
+							className='text-xs font-medium text-light-300 mt-0.5'
+							numberOfLines={1}
+						>
+							Тиск: {bar} бар
+						</Text>
+					</View>
+				)}
+
+				{Array.isArray(bar_value) && bar_value.length > 0 && (
+					<View className='flex-row items-center justify-start gap-x-1'>
+						<Text
+							className='text-xs font-medium text-light-300 mt-0.5'
+							numberOfLines={1}
+						>
+							Тиск: {bar_value.join(', ')}
 						</Text>
 					</View>
 				)}
@@ -117,7 +116,7 @@ export default function ProductCard({
 				{Array.isArray(passage) && passage.length > 0 && (
 					<View className='flex-row items-center justify-start gap-x-1'>
 						<Text
-							className='text-xs font-medium text-light-300 mt-1'
+							className='text-xs font-medium text-light-300 mt-0.5'
 							numberOfLines={1}
 						>
 							Діаметр: {passage.join(', ')}
@@ -125,13 +124,35 @@ export default function ProductCard({
 					</View>
 				)}
 
-				{size && (
-					<View className='flex-row items-center justify-between'>
+				{Array.isArray(size) && size.length > 0 && (
+					<View className='flex-row items-center justify-start gap-x-1'>
 						<Text
-							className='text-xs font-medium text-light-300 mt-1'
+							className='text-xs font-medium text-light-300 mt-0.5'
 							numberOfLines={1}
 						>
-							Розмір: {size} мм
+							Розмір: {size.join(', ')}
+						</Text>
+					</View>
+				)}
+
+				{input_voltage && (
+					<View className='flex-row items-center justify-between'>
+						<Text
+							className='text-xs font-medium text-light-300 mt-0.5'
+							numberOfLines={1}
+						>
+							Вхід: {input_voltage}
+						</Text>
+					</View>
+				)}
+
+				{output_voltage && (
+					<View className='flex-row items-center justify-between'>
+						<Text
+							className='text-xs font-medium text-light-300 mt-0.5'
+							numberOfLines={1}
+						>
+							Вихід: {output_voltage}
 						</Text>
 					</View>
 				)}

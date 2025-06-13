@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet, Easing } from 'react-native';
+import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CategoryHeader } from '@/components/category/CategoryHeader';
 import { CategoryContent } from '@/components/category/CategoryContent';

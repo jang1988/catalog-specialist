@@ -55,6 +55,9 @@ export interface Variant {
 	diameter_tube?: string;
 	color_tube?: string;
 	disc?: string;
+	input_voltage?: string;
+	output_voltage?: string;
+	old_price?: string;
 }
 
 export interface GroupItem {

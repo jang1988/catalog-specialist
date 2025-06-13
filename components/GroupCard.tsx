@@ -1,8 +1,8 @@
-import { GroupCardProps } from '@/types/interfaces';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { GroupCardProps } from '@/types/interfaces'
+import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
+import React from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
 
 export default function GroupCard({
 	group,
@@ -36,7 +36,7 @@ export default function GroupCard({
 			)}
 
 			{/* Основное содержимое карточки */}
-			<View className={'relative rounded-2xl overflow-hidden'}>
+			<View className='relative rounded-2xl overflow-hidden'>
 				{/* Изображение с градиентом */}
 				<View className='w-full h-48'>
 					<Image

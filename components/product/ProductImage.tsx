@@ -3,10 +3,10 @@ import {
 	Image,
 	ImageErrorEventData,
 	NativeSyntheticEvent,
-	Text,
-	TouchableOpacity,
+	Pressable,
 	View,
 } from 'react-native';
+import { ChevronLeft } from 'react-native-feather';
 
 type ProductImageProps = {
 	imageUrl?: string;
@@ -28,12 +28,14 @@ export const ProductImage = ({ imageUrl, onImageError }: ProductImageProps) => {
 				resizeMode='cover'
 				onError={onImageError}
 			/>
-			<TouchableOpacity
+			<Pressable
 				className='absolute top-4 left-4 bg-black/50 p-2 rounded-full'
 				onPress={() => router.back()}
+				accessibilityLabel='Go back'
+				accessibilityRole='button'
 			>
-				<Text className='text-white font-bold'>←</Text>
-			</TouchableOpacity>
+				<ChevronLeft width={28} height={28} color='#FFFFFF' strokeWidth={2.5} />
+			</Pressable>
 		</View>
 	);
 };

@@ -11,6 +11,7 @@ const PRODUCT_TABLES = [
 	'vibrators_card',
 	'valves_card',
 	'fittings_card',
+	'convert_card',
 ] as const;
 
 const GROUP_TABLES = [
@@ -36,6 +37,7 @@ const TABLE_MAPPING = {
 	vibrators: 'vibrators_card',
 	valves: 'valves_card',
 	fittings: 'fittings_card',
+	convert: 'convert_card',
 } as const;
 
 type TableKey = keyof typeof TABLE_MAPPING;
@@ -102,17 +104,34 @@ export const fetchCategoryById = async (id: string): Promise<string> => {
  * Загружает список рекомендуемых товаров
  */
 export const fetchRecomends = async (
-	search: string = ''
 ): Promise<Array<any>> => {
 	try {
-		const { data, error } = await supabase
-			.from('recomend_card')
+		const { data: recomendations, error } = await supabase
+			.from('recomends_card')
 			.select('*')
-			.ilike('name', `%${search}%`)
-			.order('id', { ascending: true });
+			.order('order', { ascending: true });
 
 		if (error) throw error;
-		return data || [];
+		if (!recomendations) return [];
+
+		// Загружаем каждый товар из указанной таблицы
+		const fullItems = await Promise.all(
+			recomendations.map(async (item) => {
+				const { product_table, id } = item;
+
+				const { data, error } = await supabase
+					.from(product_table)
+					.select('*')
+					.eq('id', id)
+					.maybeSingle();
+
+				if (error || !data) return null;
+
+				return { ...data, _source: product_table };
+			})
+		);
+
+		return fullItems.filter(Boolean);
 	} catch (error) {
 		return handleError('загрузка рекомендуемых товаров', error);
 	}
@@ -124,15 +143,19 @@ export const fetchRecomends = async (
 const resolveTableName = (table?: string): ProductTable => {
 	if (!table) return 'distributors_card';
 
-	// Проверяем прямое совпадение с полным именем
 	if (PRODUCT_TABLES.includes(table as ProductTable)) {
 		return table as ProductTable;
 	}
 
-	// Проверяем маппинг коротких имен
-	const shortName = table.replace('_card', '') as TableKey;
-	return TABLE_MAPPING[shortName] || 'distributors_card';
+	const cleaned = table.replace(/^group_/, '').replace(/_card$/, '');
+
+	if (cleaned in TABLE_MAPPING) {
+		return TABLE_MAPPING[cleaned as keyof typeof TABLE_MAPPING];
+	}
+
+	return 'distributors_card';
 };
+
 
 /**
  * Загружает информацию о товаре по его ID из указанной таблицы
@@ -197,7 +220,7 @@ const createProductQuery = (
 		.eq('group_table', groupTable);
 
 	if (groupId) {
-		query.eq('group', groupId);
+		query.eq('group', groupId).order('id');
 	}
 
 	return query;
@@ -235,7 +258,7 @@ export const fetchProductsByGroup = async (
 		const results = await Promise.all(queries);
 
 		// Проверяем ошибки
-		results.forEach((result, index) => {
+		results.forEach((result) => {
 			if (result.error) throw result.error;
 		});
 

@@ -1,4 +1,5 @@
 import { DeliveryInfo } from '@/components/product/DeliveryInfo';
+import { PremiumDiscountBadge } from '@/components/product/DiscountBadge'
 import { ProductDesc } from '@/components/product/ProductDesc';
 import { ProductImage } from '@/components/product/ProductImage';
 import { ProductInfo } from '@/components/product/ProductInfo';
@@ -8,10 +9,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
 	ActivityIndicator,
 	ScrollView,
+	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from 'react-native';
+
+	
 
 export default function ProductDetails() {
 	const router = useRouter();
@@ -166,15 +170,19 @@ export default function ProductDetails() {
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Product image block */}
-				<ProductImage
-					imageUrl={
-						imageError
-							? 'https://via.placeholder.com/600x400/1a1a1a/ffffff?text=Нет+изображения'
-							: product.img_url
-					}
-					onImageError={() => setImageError(true)}
-				/>
-
+				<View className='relative'>
+					<ProductImage
+						imageUrl={
+							imageError
+								? 'https://via.placeholder.com/600x400/1a1a1a/ffffff?text=Нет+изображения'
+								: product.img_url
+						}
+						onImageError={() => setImageError(true)}
+					/>
+					{actualVariant?.old_price && (
+						<PremiumDiscountBadge actualVariant={actualVariant} />
+					)}
+				</View>
 				{/* Main content */}
 				<View className='p-4'>
 					{/* Product name */}
@@ -335,6 +343,13 @@ export default function ProductDetails() {
 					/>
 
 					<ProductOption
+						title='Діаметр трубки'
+						options={compatibleDiameterTube}
+						selectedOption={selectedDiameterTube}
+						onSelect={setSelectedDiameterTube}
+					/>
+
+					<ProductOption
 						title='Зовнішня різьба'
 						options={compatibleThreadsPapa}
 						selectedOption={selectedThreadPapa}
@@ -360,13 +375,6 @@ export default function ProductDetails() {
 						options={compatibleAngleTypes}
 						selectedOption={selectedAngleType}
 						onSelect={setSelectedAngleType}
-					/>
-
-					<ProductOption
-						title='Діаметр трубки'
-						options={compatibleDiameterTube}
-						selectedOption={selectedDiameterTube}
-						onSelect={setSelectedDiameterTube}
 					/>
 
 					<ProductOption

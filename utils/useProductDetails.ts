@@ -51,7 +51,7 @@ export function useProductDetails(
 				? table[0]
 				: table
 			: undefined;
-
+			
 		async function fetchData() {
 			try {
 				const data = await fetchProductById(normalizedId, normalizedTable);
@@ -168,6 +168,7 @@ export function useProductDetails(
 				...searchCriteria,
 				color_tube: '',
 				bar_value: '',
+				thread_papa: '',
 			};
 			found = product.variants.find(v =>
 				matchesCriteria(v, criteriaWithoutStroke)
@@ -296,13 +297,17 @@ export function useProductDetails(
 		// Проверяем наличие полей collet и thread_papa в вариантах
 		const hasCollet = product.variants.some(v => v['collet']);
 		const hasThreadPapa = product.variants.some(v => v['thread_papa']);
+		const hasDiameterTube = product.variants.some(v => v['diameter_tube']);
 
-		// Если есть и collet, и thread_papa, исключаем thread_papa из списка
-		// полей, которые всегда показывают все значения
-		const filteredFields =
-			hasCollet && hasThreadPapa
-				? alwaysShowAll.filter(f => f !== 'thread_papa')
-				: alwaysShowAll;
+		let filteredFields = [...alwaysShowAll];
+
+		if (hasCollet && hasThreadPapa) {
+			filteredFields = filteredFields.filter(f => f !== 'thread_papa');
+		}
+
+		if (hasDiameterTube && hasThreadPapa) {
+			filteredFields = filteredFields.filter(f => f !== 'thread_papa');
+		}
 
 		// Если текущее поле входит в список полей, которые всегда показывают все значения
 		if (filteredFields.includes(field as string)) {

@@ -112,16 +112,6 @@ export const ProductInfo = ({
 					</View>
 				)}
 
-				{actualVariant?.pressure && (
-					<View className='flex-row items-center'>
-						<Text className='text-gray-300 text-base font-medium'>Тиск</Text>
-						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
-						<Text className='text-white text-base font-semibold'>
-							{actualVariant.pressure}
-						</Text>
-					</View>
-				)}
-
 				{actualVariant?.receiver && (
 					<View className='flex-row items-center'>
 						<Text className='text-gray-300 text-base font-medium'>Ресивер</Text>
@@ -146,14 +136,14 @@ export const ProductInfo = ({
 					</View>
 				)}
 
-				{actualVariant?.thread_pt && (
+				{actualVariant?.thread && (
 					<View className='flex-row items-center'>
 						<Text className='text-gray-300 text-base font-medium'>Різьба</Text>
 
 						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
 
 						<Text className='text-white text-base font-semibold'>
-							{actualVariant.thread_pt}
+							{actualVariant.thread}
 						</Text>
 					</View>
 				)}
@@ -325,12 +315,48 @@ export const ProductInfo = ({
 						</Text>
 					</View>
 				)}
+
+				{actualVariant?.input_voltage && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Напруга на вході
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.input_voltage}
+						</Text>
+					</View>
+				)}
+
+				{actualVariant?.output_voltage && (
+					<View className='flex-row items-center'>
+						<Text className='text-gray-300 text-base font-medium'>
+							Напруга на виході
+						</Text>
+
+						<View className='flex-1 mx-3 flex-row bg-gray-800 h-[1px] border-b border-dotted rounded-px' />
+
+						<Text className='text-white text-base font-semibold'>
+							{actualVariant.output_voltage}
+						</Text>
+					</View>
+				)}
 			</View>
 
 			{/* Price */}
 			<View className='mt-5 pt-4 border-t border-gray-700 flex-row justify-between items-center'>
 				<Text className='text-white text-lg font-bold'>Ціна</Text>
 				<View className='flex-row items-center'>
+					{actualVariant.old_price && (
+						<Text className='text-red-400 text-2sm line-through mr-1'>
+							{isNaN(Number(actualVariant.old_price))
+								? actualVariant.old_price
+								: Number(actualVariant.old_price).toLocaleString('ru-RU')}
+							{!isNaN(Number(actualVariant.old_price)) && ' грн'}
+						</Text>
+					)}
 					<Text className='text-2xl font-bold text-green-400 mr-1'>
 						{isNaN(Number(actualVariant.price))
 							? actualVariant.price
