@@ -371,7 +371,6 @@ export function useProductDetails(
 	// Вспомогательные методы для информации о варианте
 	const hasDeliveryInfo = () => Boolean(actualVariant?.delivery?.trim());
 	const getDeliveryInfo = () => actualVariant?.delivery || '';
-	const hasFlow = () => Boolean(actualVariant?.flow?.trim());
 
 	// Сопоставление кодов типов с читаемыми названиями
 	const getTypeName = (typeCode: string) => {
@@ -485,6 +484,5 @@ export function useProductDetails(
 		hasDeliveryInfo,
 		getDeliveryInfo,
 		getTypeName,
-		hasFlow,
 	};
 }

@@ -9,7 +9,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
 	ActivityIndicator,
 	ScrollView,
-	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
@@ -88,7 +87,6 @@ export default function ProductDetails() {
 		hasDeliveryInfo,
 		getDeliveryInfo,
 		getTypeName,
-		hasFlow,
 	} = useProductDetails(id, table);
 
 	// Get lists of compatible values for each parameter
@@ -196,7 +194,6 @@ export default function ProductDetails() {
 							product={product}
 							actualVariant={actualVariant}
 							getTypeName={getTypeName}
-							hasFlow={hasFlow}
 						/>
 					)}
 

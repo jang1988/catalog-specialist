@@ -1,5 +1,6 @@
 import ProductCard from '@/components/ProductCard'
 import { ActivityIndicator, FlatList, Text, View } from 'react-native'
+import { RecommendsSectionSkeleton } from './ProductCardSkeleton'
 
 export default function RecommendsSection({
 	data,
@@ -12,11 +13,7 @@ export default function RecommendsSection({
 }) {
 	if (loading)
 		return (
-			<ActivityIndicator
-				size='large'
-				color='#000fff'
-				className='mt-10 self-center'
-			/>
+			<RecommendsSectionSkeleton />
 		);
 
 	if (error)
@@ -34,7 +31,8 @@ export default function RecommendsSection({
 				renderItem={({ item }) => <ProductCard {...item} />}
 				keyExtractor={item => item.id.toString()}
 				numColumns={2}
-				columnWrapperStyle={{ justifyContent: 'center', gap: 16 }}
+				columnWrapperStyle={{ justifyContent: 'center', gap: 16}}
+				style={{ paddingBottom: 20 }}
 				showsVerticalScrollIndicator={false}
 				scrollEnabled={false}
 				nestedScrollEnabled={true}

@@ -1,6 +1,7 @@
 import CategoryCard from '@/components/category/CategoryCard';
 import { useEffect, useRef } from 'react';
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { FlatList, Text } from 'react-native';
+import { CategorySectionSkeleton } from '../CategoryCardSkeleton';
 
 export default function CategoriesSection({
 	data,
@@ -50,14 +51,7 @@ export default function CategoriesSection({
 		}
 	}, [loading, data]);
 
-	if (loading)
-		return (
-			<ActivityIndicator
-				size='large'
-				color='#000fff'
-				className='mt-10 self-center'
-			/>
-		);
+	if (loading) return <CategorySectionSkeleton />;
 
 	if (error)
 		return (
@@ -70,7 +64,7 @@ export default function CategoriesSection({
 		);
 
 	return (
-		<View>
+		<>
 			<Text className='text-white text-lg font-bold mt-5 mb-3 px-5'>
 				КАТЕГОРІЇ
 			</Text>
@@ -81,6 +75,6 @@ export default function CategoriesSection({
 				showsHorizontalScrollIndicator={false}
 				renderItem={({ item }) => <CategoryCard {...item} />}
 			/>
-		</View>
+		</>
 	);
 }
