@@ -3,22 +3,22 @@ import SearchBar from '@/components/SearchBar';
 import { images } from '@/constants/images';
 import { fetchSearchProducts } from '@/utils/useDataFetch';
 import useFetch from '@/utils/useFetch';
-import { useEffect, useState, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	FlatList,
 	Image,
 	ScrollView,
 	Text,
-	View,
 	TextInput,
+	View,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 
 export default function Search() {
 	// Состояние для поискового запроса
 	const [searchQuery, setSearchQuery] = useState('');
-	
+
 	// Реф для поля поиска
 	const searchInputRef = useRef<TextInput>(null);
 
@@ -55,14 +55,14 @@ export default function Search() {
 	}, [searchQuery]);
 
 	return (
-		<View className='flex-1 bg-primary'>
+		<View className='flex-1 bg-primary '>
 			{/* Основной контейнер с прокруткой */}
+			<Image source={images.bg} className='absolute w-full z-0' />
 			<ScrollView
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{ minHeight: '100%', paddingBottom: 10 }}
+				contentContainerStyle={{ minHeight: '100%' }}
 			>
 				{/* Фоновое изображение */}
-				<Image source={images.bg} className='absolute w-full z-0' />
 
 				{/* Список товаров */}
 				<FlatList
@@ -81,12 +81,10 @@ export default function Search() {
 					numColumns={2} // Две колонки
 					columnWrapperStyle={{
 						justifyContent: 'center',
-						gap: 20,
-						marginVertical: 10,
+						gap: 16,
 					}}
-					className='px-5'
 					scrollEnabled={false} // Отключаем скролл (используем внешний ScrollView)
-					contentContainerStyle={{ paddingBottom: 100 }}
+					contentContainerStyle={{ paddingBottom: 70 }}
 					// Заголовок списка
 					ListHeaderComponent={
 						<>

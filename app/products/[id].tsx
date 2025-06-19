@@ -1,5 +1,7 @@
+import { AddToCartButton } from '@/components/AddToCartButton';
+import CallButton from '@/components/CallButton';
 import { DeliveryInfo } from '@/components/product/DeliveryInfo';
-import { PremiumDiscountBadge } from '@/components/product/DiscountBadge'
+import { PremiumDiscountBadge } from '@/components/product/DiscountBadge';
 import { ProductDesc } from '@/components/product/ProductDesc';
 import { ProductImage } from '@/components/product/ProductImage';
 import { ProductInfo } from '@/components/product/ProductInfo';
@@ -14,14 +16,268 @@ import {
 	View,
 } from 'react-native';
 
-	
+// Конфигурация опций продукта для более удобного управления
+const PRODUCT_OPTIONS_CONFIG = [
+	{
+		key: 'thread',
+		title: 'Різьба',
+		stateKey: 'selectedThread',
+		setterKey: 'setSelectedThread',
+	},
+	{
+		key: 'accession',
+		title: 'Приєднання',
+		stateKey: 'selectedAccession',
+		setterKey: 'setSelectedAccession',
+	},
+	{
+		key: 'passage',
+		title: 'Діаметр умовного проходу',
+		stateKey: 'selectedPassage',
+		setterKey: 'setSelectedPassage',
+	},
+	{
+		key: 'type',
+		title: 'Тип клапана',
+		stateKey: 'selectedType',
+		setterKey: 'setSelectedType',
+	},
+	{
+		key: 'lever',
+		title: 'Тип перемикача',
+		stateKey: 'selectedLever',
+		setterKey: 'setSelectedLever',
+	},
+	{
+		key: 'voltage',
+		title: 'Напруга живлення',
+		stateKey: 'selectedVoltage',
+		setterKey: 'setSelectedVoltage',
+	},
+	{
+		key: 'size',
+		title: 'Розмір',
+		stateKey: 'selectedSize',
+		setterKey: 'setSelectedSize',
+	},
+	{
+		key: 'filter_element',
+		title: 'Елемент фільтра',
+		stateKey: 'selectedFilterElement',
+		setterKey: 'setSelectedFilterElement',
+	},
+	{
+		key: 'filtration',
+		title: 'Ступінь фільтрації',
+		stateKey: 'selectedFiltration',
+		setterKey: 'setSelectedFiltration',
+	},
+	{
+		key: 'signal_type',
+		title: 'Тип вхідного сигналу',
+		stateKey: 'selectedSignalType',
+		setterKey: 'setSelectedSignalType',
+	},
+	{
+		key: 'piston_diameter',
+		title: 'Діаметр поршню',
+		stateKey: 'selectedPistonDiameter',
+		setterKey: 'setSelectedPistonDiameter',
+	},
+	{
+		key: 'stroke_length',
+		title: 'Довжина ходу',
+		stateKey: 'selectedStrokeLength',
+		setterKey: 'setSelectedStrokeLength',
+	},
+	{
+		key: 'stock',
+		title: 'Шток',
+		stateKey: 'selectedStock',
+		setterKey: 'setSelectedStock',
+	},
+	{
+		key: 'rotation',
+		title: 'Кут повороту',
+		stateKey: 'selectedRotation',
+		setterKey: 'setSelectedRotation',
+	},
+	{
+		key: 'effort',
+		title: 'Зусилля',
+		stateKey: 'selectedEffort',
+		setterKey: 'setSelectedEffort',
+	},
+	{
+		key: 'sealing',
+		title: 'Ущільнення',
+		stateKey: 'selectedSealing',
+		setterKey: 'setSelectedSealing',
+	},
+	{
+		key: 'disc',
+		title: 'Диск',
+		stateKey: 'selectedDisc',
+		setterKey: 'setSelectedDisc',
+	},
+	{
+		key: 'mode_action',
+		title: 'Спосіб дії',
+		stateKey: 'selectedModeAction',
+		setterKey: 'setSelectedModeAction',
+	},
+	{
+		key: 'collet',
+		title: 'Цанга під трубку',
+		stateKey: 'selectedCollet',
+		setterKey: 'setSelectedCollet',
+	},
+	{
+		key: 'diameter_tube',
+		title: 'Діаметр трубки',
+		stateKey: 'selectedDiameterTube',
+		setterKey: 'setSelectedDiameterTube',
+	},
+	{
+		key: 'thread_papa',
+		title: 'Зовнішня різьба',
+		stateKey: 'selectedThreadPapa',
+		setterKey: 'setSelectedThreadPapa',
+	},
+	{
+		key: 'thread_mama',
+		title: 'Внутрішня різьба',
+		stateKey: 'selectedThreadMama',
+		setterKey: 'setSelectedThreadMama',
+	},
+	{
+		key: 'diameter_tree',
+		title: 'Діаметр "ялинки"',
+		stateKey: 'selectedDiameterTree',
+		setterKey: 'setSelectedDiameterTree',
+	},
+	{
+		key: 'angle_type',
+		title: 'Тип',
+		stateKey: 'selectedAngleType',
+		setterKey: 'setSelectedAngleType',
+	},
+	{
+		key: 'bar_value',
+		title: 'Тиск',
+		stateKey: 'selectedBarValue',
+		setterKey: 'setSelectedBarValue',
+	},
+	{
+		key: 'color_tube',
+		title: 'Колір',
+		stateKey: 'selectedColorTube',
+		setterKey: 'setSelectedColorTube',
+	},
+];
+
+// Компонент для отображения состояния загрузки
+const LoadingState = () => (
+	<View className='flex-1 justify-center items-center bg-primary'>
+		<ActivityIndicator size='large' color='#fff' />
+		<Text className='text-white mt-4'>Загрузка...</Text>
+	</View>
+);
+
+// Компонент для отображения ошибки
+const ErrorState = ({
+	error,
+	onGoBack,
+}: {
+	error: string;
+	onGoBack: () => void;
+}) => (
+	<View className='flex-1 justify-center items-center bg-primary px-4'>
+		<Text className='text-red-400 text-xl font-bold text-center'>
+			Ошибка: {error}
+		</Text>
+		<TouchableOpacity
+			onPress={onGoBack}
+			className='mt-6 bg-blue-600 px-6 py-3 rounded-full'
+		>
+			<Text className='text-white text-lg font-semibold'>Назад</Text>
+		</TouchableOpacity>
+	</View>
+);
+
+// Компонент для отображения состояния "товар не найден"
+const ProductNotFoundState = ({ onGoBack }: { onGoBack: () => void }) => (
+	<View className='flex-1 justify-center items-center bg-primary'>
+		<Text className='text-white text-xl'>Товар не найден</Text>
+		<TouchableOpacity
+			onPress={onGoBack}
+			className='mt-6 bg-blue-600 px-6 py-3 rounded-full'
+		>
+			<Text className='text-white text-lg font-semibold'>Назад</Text>
+		</TouchableOpacity>
+	</View>
+);
+
+// Компонент для отображения опций продукта
+const ProductOptionsSection = ({
+	productDetailsHook,
+	getCompatibleValues,
+}: {
+	productDetailsHook: any;
+	getCompatibleValues: (key: any) => string[];
+}) => {
+	return (
+		<>
+			{PRODUCT_OPTIONS_CONFIG.map(option => {
+				const compatibleValues = getCompatibleValues(option.key);
+				const selectedValue = productDetailsHook[option.stateKey];
+				const setterFunction = productDetailsHook[option.setterKey];
+
+				// Специальная логика для магнита - показываем только если больше 1 варианта
+				if (option.key === 'magnet' && compatibleValues.length <= 1) {
+					return null;
+				}
+
+				// Не показываем опцию если нет доступных значений
+				if (!compatibleValues || compatibleValues.length === 0) {
+					return null;
+				}
+
+				return (
+					<ProductOption
+						key={option.key}
+						title={option.title}
+						options={compatibleValues}
+						selectedOption={selectedValue}
+						onSelect={setterFunction}
+					/>
+				);
+			})}
+
+			{/* Отдельно обрабатываем магнит с условием */}
+			{(() => {
+				const compatibleMagnets = getCompatibleValues('magnet');
+				if (compatibleMagnets.length > 1) {
+					return (
+						<ProductOption
+							title='Магніт'
+							options={compatibleMagnets}
+							selectedOption={productDetailsHook.selectedMagnet}
+							onSelect={productDetailsHook.setSelectedMagnet}
+						/>
+					);
+				}
+				return null;
+			})()}
+		</>
+	);
+};
 
 export default function ProductDetails() {
 	const router = useRouter();
-	// Get product ID and table name from URL parameters
 	const { id, table } = useLocalSearchParams();
 
-	// Use our custom hook for product details logic
+	const productDetailsHook = useProductDetails(id, table);
 	const {
 		product,
 		loading,
@@ -29,166 +285,69 @@ export default function ProductDetails() {
 		imageError,
 		setImageError,
 		actualVariant,
-		selectedVoltage,
-		selectedType,
-		selectedLever,
-		selectedThread,
-		selectedFilterElement,
-		selectedSize,
-		selectedBarValue,
-		selectedFiltration,
-		selectedSignalType,
-		selectedPistonDiameter,
-		selectedStrokeLength,
-		selectedStock,
-		selectedMagnet,
-		selectedRotation,
-		selectedAngleType,
-		selectedEffort,
-		selectedAccession,
-		selectedPassage,
-		selectedSealing,
-		selectedDisc,
-		selectedModeAction,
-		selectedThreadPapa,
-		selectedCollet,
-		selectedThreadMama,
-		selectedDiameterTree,
-		selectedDiameterTube,
-		selectedColorTube,
-		setSelectedVoltage,
-		setSelectedType,
-		setSelectedLever,
-		setSelectedThread,
-		setSelectedFilterElement,
-		setSelectedSize,
-		setSelectedBarValue,
-		setSelectedFiltration,
-		setSelectedSignalType,
-		setSelectedPistonDiameter,
-		setSelectedStrokeLength,
-		setSelectedStock,
-		setSelectedMagnet,
-		setSelectedRotation,
-		setSelectedAngleType,
-		setSelectedEffort,
-		setSelectedAccession,
-		setSelectedPassage,
-		setSelectedSealing,
-		setSelectedDisc,
-		setSelectedModeAction,
-		setSelectedThreadPapa,
-		setSelectedCollet,
-		setSelectedThreadMama,
-		setSelectedDiameterTree,
-		setSelectedDiameterTube,
-		setSelectedColorTube,
 		getCompatibleValues,
 		hasDeliveryInfo,
 		getDeliveryInfo,
 		getTypeName,
-	} = useProductDetails(id, table);
+	} = productDetailsHook;
 
-	// Get lists of compatible values for each parameter
-	const compatibleThreads = getCompatibleValues('thread');
-	const compatibleTypes = getCompatibleValues('type');
-	const compatibleVoltages = getCompatibleValues('voltage');
-	const compatibleLevers = getCompatibleValues('lever');
-	const compatibleFilterElements = getCompatibleValues('filter_element');
-	const compatibleSizes = getCompatibleValues('size');
-	const compatibleBarValues = getCompatibleValues('bar_value');
-	const compatibleFiltrations = getCompatibleValues('filtration');
-	const compatibleSignalTypes = getCompatibleValues('signal_type');
-	const compatiblePistonDiameters = getCompatibleValues('piston_diameter');
-	const compatibleStrokeLengths = getCompatibleValues('stroke_length');
-	const compatibleStocks = getCompatibleValues('stock');
-	const compatibleMagnets = getCompatibleValues('magnet');
-	const compatibleRotations = getCompatibleValues('rotation');
-	const compatibleAngleTypes = getCompatibleValues('angle_type');
-	const compatibleEfforts = getCompatibleValues('effort');
-	const compatibleAccessions = getCompatibleValues('accession');
-	const compatiblePassages = getCompatibleValues('passage');
-	const compatibleSealing = getCompatibleValues('sealing');
-	const compatibleDisc = getCompatibleValues('disc');
-	const compatibleModeActions = getCompatibleValues('mode_action');
-	const compatibleThreadsPapa = getCompatibleValues('thread_papa');
-	const compatibleCollet = getCompatibleValues('collet');
-	const compatibleThreadMama = getCompatibleValues('thread_mama');
-	const compatibleDiameterTree = getCompatibleValues('diameter_tree');
-	const compatibleDiameterTube = getCompatibleValues('diameter_tube');
-	const compatibleColorTube = getCompatibleValues('color_tube');
+	const handleGoBack = () => router.back();
 
-	// Display loading indicator
-	if (loading) {
-		return (
-			<View className='flex-1 justify-center items-center bg-primary'>
-				<ActivityIndicator size='large' color='#fff' />
-				<Text className='text-white mt-4'>Загрузка...</Text>
-			</View>
-		);
-	}
+	const getImageUrl = () => {
+		if (imageError) {
+			return 'https://via.placeholder.com/600x400/1a1a1a/ffffff?text=Нет+изображения';
+		}
+		return product?.img_url;
+	};
 
-	// Display error
-	if (error) {
-		return (
-			<View className='flex-1 justify-center items-center bg-primary px-4'>
-				<Text className='text-red-400 text-xl font-bold text-center'>
-					Ошибка: {error}
-				</Text>
-				<TouchableOpacity
-					onPress={() => router.back()}
-					className='mt-6 bg-blue-600 px-6 py-3 rounded-full'
-				>
-					<Text className='text-white text-lg font-semibold'>Назад</Text>
-				</TouchableOpacity>
-			</View>
-		);
-	}
+	// Функция для получения данных продукта для избранного
+	const getProductDataForFavorites = () => {
+		if (!product || !actualVariant) return null;
 
-	// If product not found
-	if (!product) {
-		return (
-			<View className='flex-1 justify-center items-center bg-primary'>
-				<Text className='text-white text-xl'>Товар не найден</Text>
-				<TouchableOpacity
-					onPress={() => router.back()}
-					className='mt-6 bg-blue-600 px-6 py-3 rounded-full'
-				>
-					<Text className='text-white text-lg font-semibold'>Назад</Text>
-				</TouchableOpacity>
-			</View>
-		);
-	}
+		return {
+			name: product.name,
+			price: actualVariant.price,
+			old_price: actualVariant.old_price,
+			img_url: product.img_url,
+			desc: product.desc,
+		};
+	};
 
-	// Main component rendering
+	// Состояния загрузки и ошибок
+	if (loading) return <LoadingState />;
+	if (error) return <ErrorState error={error} onGoBack={handleGoBack} />;
+	if (!product) return <ProductNotFoundState onGoBack={handleGoBack} />;
+
 	return (
 		<View className='bg-primary flex-1'>
+			<CallButton />
 			<ScrollView
 				contentContainerStyle={{ paddingBottom: 80 }}
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Product image block */}
+				{/* Блок изображения продукта */}
 				<View className='relative'>
 					<ProductImage
-						imageUrl={
-							imageError
-								? 'https://via.placeholder.com/600x400/1a1a1a/ffffff?text=Нет+изображения'
-								: product.img_url
-						}
+						imageUrl={getImageUrl()}
+						productId={String(id)}
+						tableName={String(table)}
+						productData={getProductDataForFavorites()}
+						actualVariant={actualVariant}
 						onImageError={() => setImageError(true)}
 					/>
 					{actualVariant?.old_price && (
 						<PremiumDiscountBadge actualVariant={actualVariant} />
 					)}
 				</View>
-				{/* Main content */}
+
+				{/* Основной контент */}
 				<View className='p-4'>
-					{/* Product name */}
+					{/* Название продукта */}
 					<Text className='text-white text-xl font-bold mb-4'>
 						{product.name}
 					</Text>
 
-					{/* Variant main info block */}
+					{/* Основная информация о варианте */}
 					{actualVariant && (
 						<ProductInfo
 							product={product}
@@ -197,218 +356,32 @@ export default function ProductDetails() {
 						/>
 					)}
 
-					<ProductOption
-						title='Різьба'
-						options={compatibleThreads}
-						selectedOption={selectedThread}
-						onSelect={setSelectedThread}
+					{/* Секция опций продукта */}
+					<ProductOptionsSection
+						productDetailsHook={productDetailsHook}
+						getCompatibleValues={getCompatibleValues}
 					/>
 
-					<ProductOption
-						title='Приєднання'
-						options={compatibleAccessions}
-						selectedOption={selectedAccession}
-						onSelect={setSelectedAccession}
-					/>
-
-					<ProductOption
-						title='Діаметр умовного проходу'
-						options={compatiblePassages}
-						selectedOption={selectedPassage}
-						onSelect={setSelectedPassage}
-					/>
-
-					<ProductOption
-						title='Тип клапана'
-						options={compatibleTypes}
-						selectedOption={selectedType}
-						onSelect={setSelectedType}
-					/>
-
-					<ProductOption
-						title='Тип перемикача'
-						options={compatibleLevers}
-						selectedOption={selectedLever}
-						onSelect={setSelectedLever}
-					/>
-
-					<ProductOption
-						title='Напруга живлення'
-						options={compatibleVoltages}
-						selectedOption={selectedVoltage}
-						onSelect={setSelectedVoltage}
-					/>
-
-					<ProductOption
-						title='Розмір'
-						options={compatibleSizes}
-						selectedOption={selectedSize}
-						onSelect={setSelectedSize}
-					/>
-
-					<ProductOption
-						title='Елемент фільтра'
-						options={compatibleFilterElements}
-						selectedOption={selectedFilterElement}
-						onSelect={setSelectedFilterElement}
-					/>
-
-					<ProductOption
-						title='Ступінь фільтрації'
-						options={compatibleFiltrations}
-						selectedOption={selectedFiltration}
-						onSelect={setSelectedFiltration}
-					/>
-
-					<ProductOption
-						title='Тип вхідного сигналу'
-						options={compatibleSignalTypes}
-						selectedOption={selectedSignalType}
-						onSelect={setSelectedSignalType}
-					/>
-
-					<ProductOption
-						title='Діаметр поршню'
-						options={compatiblePistonDiameters}
-						selectedOption={selectedPistonDiameter}
-						onSelect={setSelectedPistonDiameter}
-					/>
-
-					<ProductOption
-						title='Довжина ходу'
-						options={compatibleStrokeLengths}
-						selectedOption={selectedStrokeLength}
-						onSelect={setSelectedStrokeLength}
-					/>
-
-					<ProductOption
-						title='Шток'
-						options={compatibleStocks}
-						selectedOption={selectedStock}
-						onSelect={setSelectedStock}
-					/>
-
-					{compatibleMagnets.length > 1 && (
-						<ProductOption
-							title='Магніт'
-							options={compatibleMagnets}
-							selectedOption={selectedMagnet}
-							onSelect={setSelectedMagnet}
-						/>
-					)}
-
-					<ProductOption
-						title='Кут повороту'
-						options={compatibleRotations}
-						selectedOption={selectedRotation}
-						onSelect={setSelectedRotation}
-					/>
-
-					<ProductOption
-						title='Зусилля'
-						options={compatibleEfforts}
-						selectedOption={selectedEffort}
-						onSelect={setSelectedEffort}
-					/>
-
-					<ProductOption
-						title='Ущільнення'
-						options={compatibleSealing}
-						selectedOption={selectedSealing}
-						onSelect={setSelectedSealing}
-					/>
-
-					<ProductOption
-						title='Диск'
-						options={compatibleDisc}
-						selectedOption={selectedDisc}
-						onSelect={setSelectedDisc}
-					/>
-
-					<ProductOption
-						title='Спосіб дії'
-						options={compatibleModeActions}
-						selectedOption={selectedModeAction}
-						onSelect={setSelectedModeAction}
-					/>
-
-					<ProductOption
-						title='Цанга під трубку'
-						options={compatibleCollet}
-						selectedOption={selectedCollet}
-						onSelect={setSelectedCollet}
-					/>
-
-					<ProductOption
-						title='Діаметр трубки'
-						options={compatibleDiameterTube}
-						selectedOption={selectedDiameterTube}
-						onSelect={setSelectedDiameterTube}
-					/>
-
-					<ProductOption
-						title='Зовнішня різьба'
-						options={compatibleThreadsPapa}
-						selectedOption={selectedThreadPapa}
-						onSelect={setSelectedThreadPapa}
-					/>
-
-					<ProductOption
-						title='Внутрішня різьба'
-						options={compatibleThreadMama}
-						selectedOption={selectedThreadMama}
-						onSelect={setSelectedThreadMama}
-					/>
-
-					<ProductOption
-						title='Діаметр "ялинки"'
-						options={compatibleDiameterTree}
-						selectedOption={selectedDiameterTree}
-						onSelect={setSelectedDiameterTree}
-					/>
-
-					<ProductOption
-						title='Тип'
-						options={compatibleAngleTypes}
-						selectedOption={selectedAngleType}
-						onSelect={setSelectedAngleType}
-					/>
-
-					<ProductOption
-						title='Тиск'
-						options={compatibleBarValues}
-						selectedOption={selectedBarValue}
-						onSelect={setSelectedBarValue}
-					/>
-
-					<ProductOption
-						title='Колір'
-						options={compatibleColorTube}
-						selectedOption={selectedColorTube}
-						onSelect={setSelectedColorTube}
-					/>
-
+					{/* Информация о доставке */}
 					<DeliveryInfo
 						hasDeliveryInfo={hasDeliveryInfo}
 						getDeliveryInfo={getDeliveryInfo}
 					/>
 
-					{/* Add to cart button */}
+					{/* Кнопкa заказа  */}
 					<View className='flex-row justify-center mt-8'>
-						<TouchableOpacity
-							className='bg-greener px-8 py-4 rounded-full shadow-md active:bg-greener w-full border-[.5px] border-white/50'
-							disabled={!actualVariant}
-							style={{ opacity: actualVariant ? 1 : 0.5 }}
-						>
-							<Text className='text-white text-lg font-bold text-center tracking-wider'>
-								ЗАМОВИТИ
-							</Text>
-						</TouchableOpacity>
+						<AddToCartButton
+							productId={String(id)}
+							tableName={String(table)}
+							productData={getProductDataForFavorites()}
+							actualVariant={actualVariant}
+						/>
 					</View>
 
+					{/* Описание продукта */}
 					<ProductDesc description={product.desc} />
 
-					{/* Back */}
+					{/* Кнопка "Назад" */}
 					<View className='flex-row justify-center mt-4'>
 						<TouchableOpacity
 							className='bg-transparent border border-blue-600 px-6 py-3 rounded-full active:bg-blue-900/20 w-full'

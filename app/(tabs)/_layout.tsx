@@ -8,12 +8,12 @@ const TabIcon = ({ focused, icon, title }: any) => {
 		return (
 			<ImageBackground
 				source={images.highlight}
-				className='flex flex-row w-full flex-1 min-w-[112px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden'
+				className='flex flex-col w-full flex-1 min-w-[100px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden'
 			>
+				
 				<Image source={icon} tintColor='#151312' className='size-6' />
-				<Text className='text-secondary text-base font-bold ml-2'>
-					{title}
-				</Text>
+
+				<Text className='text-secondary text-base font-bold ml-2'>{title}</Text>
 			</ImageBackground>
 		);
 	}
@@ -35,7 +35,6 @@ export default function TabsLayout() {
 					height: '100%',
 					justifyContent: 'center',
 					alignItems: 'center',
-					
 				},
 				tabBarStyle: {
 					backgroundColor: '#138352',
@@ -46,11 +45,9 @@ export default function TabsLayout() {
 					position: 'absolute',
 					borderWidth: 1,
 					borderColor: '#138352',
-					
 				},
 			}}
 		>
-			
 			<Tabs.Screen
 				name='index'
 				options={{
@@ -78,6 +75,16 @@ export default function TabsLayout() {
 					headerShown: false,
 					tabBarIcon: ({ focused }) => (
 						<TabIcon focused={focused} icon={icons.save} title='Обране' />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name='cart'
+				options={{
+					title: 'Cart',
+					headerShown: false,
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} icon={icons.cart} title='Кошик' />
 					),
 				}}
 			/>

@@ -40,7 +40,6 @@ const TABLE_MAPPING = {
 	convert: 'convert_card',
 } as const;
 
-type TableKey = keyof typeof TABLE_MAPPING;
 type ProductTable = (typeof PRODUCT_TABLES)[number];
 
 // Универсальная функция для обработки ошибок
@@ -101,43 +100,6 @@ export const fetchCategoryById = async (id: string): Promise<string> => {
 };
 
 /**
- * Загружает список рекомендуемых товаров
- */
-export const fetchRecomends = async (
-): Promise<Array<any>> => {
-	try {
-		const { data: recomendations, error } = await supabase
-			.from('recomends_card')
-			.select('*')
-			.order('order', { ascending: true });
-
-		if (error) throw error;
-		if (!recomendations) return [];
-
-		// Загружаем каждый товар из указанной таблицы
-		const fullItems = await Promise.all(
-			recomendations.map(async (item) => {
-				const { product_table, id } = item;
-
-				const { data, error } = await supabase
-					.from(product_table)
-					.select('*')
-					.eq('id', id)
-					.maybeSingle();
-
-				if (error || !data) return null;
-
-				return { ...data, _source: product_table };
-			})
-		);
-
-		return fullItems.filter(Boolean);
-	} catch (error) {
-		return handleError('загрузка рекомендуемых товаров', error);
-	}
-};
-
-/**
  * Определяет корректное имя таблицы на основе переданного параметра
  */
 const resolveTableName = (table?: string): ProductTable => {
@@ -156,6 +118,57 @@ const resolveTableName = (table?: string): ProductTable => {
 	return 'distributors_card';
 };
 
+/**
+ * Создает единообразную метку таблицы
+ */
+const createTableLabel = (tableName: ProductTable): string => {
+	return tableName.replace('_card', '');
+};
+
+/**
+ * Загружает список рекомендуемых товаров
+ */
+export const fetchRecomends = async (
+): Promise<Array<any>> => {
+	try {
+		const { data: recomendations, error } = await supabase
+			.from('recomends_card')
+			.select('*')
+			.order('order', { ascending: true });
+
+		if (error) throw error;
+		if (!recomendations) return [];
+
+		// Загружаем каждый товар из указанной таблицы
+		const fullItems = await Promise.all(
+			recomendations.map(async (item) => {
+				const { product_table, id } = item;
+				
+				// Используем resolveTableName для унификации названия таблицы
+				const tableName = resolveTableName(product_table);
+
+				const { data, error } = await supabase
+					.from(tableName)
+					.select('*')
+					.eq('id', id)
+					.maybeSingle();
+
+				if (error || !data) return null;
+
+				// Используем единообразную метку таблицы
+				return { 
+					...data, 
+					table: createTableLabel(tableName),
+					_originalSource: product_table // сохраняем оригинальное название для отладки
+				};
+			})
+		);
+
+		return fullItems.filter(Boolean);
+	} catch (error) {
+		return handleError('загрузка рекомендуемых товаров', error);
+	}
+};
 
 /**
  * Загружает информацию о товаре по его ID из указанной таблицы
@@ -174,11 +187,28 @@ export const fetchProductById = async (
 			.select('*')
 			.eq('id', id)
 			.single();
+		
 		if (error) throw error;
-		return data;
+		
+		// Добавляем единообразную метку таблицы
+		return {
+			...data,
+			table: createTableLabel(tableName)
+		};
 	} catch (error) {
 		return handleError('загрузка товара', error);
 	}
+};
+
+/**
+ * Добавляет метку таблицы к продуктам
+ */
+const addTableLabel = (products: any[], tableName: ProductTable): any[] => {
+	const tableLabel = createTableLabel(tableName);
+	return products.map(product => ({
+		...product,
+		table: tableLabel,
+	}));
 };
 
 /**
@@ -224,17 +254,6 @@ const createProductQuery = (
 	}
 
 	return query;
-};
-
-/**
- * Добавляет метку таблицы к продуктам
- */
-const addTableLabel = (products: any[], tableName: ProductTable): any[] => {
-	const tableLabel = tableName.replace('_card', '');
-	return products.map(product => ({
-		...product,
-		table: tableLabel,
-	}));
 };
 
 /**
