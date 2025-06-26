@@ -1,14 +1,14 @@
-import { GroupCardProps } from '@/types/interfaces'
-import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
-import React from 'react'
-import { Text, TouchableOpacity, View } from 'react-native'
+import { GroupCardProps } from '@/types/interfaces';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-export default function GroupCard({
+export const GroupCard = ({
 	group,
 	isSelected = false,
 	onPress,
-}: GroupCardProps) {
+}: GroupCardProps) => {
 	const blurhash = 'L0000y%M00t7_NM{Rjof00ayt7of';
 
 	return (
@@ -78,4 +78,4 @@ export default function GroupCard({
 			</View>
 		</TouchableOpacity>
 	);
-}
+};

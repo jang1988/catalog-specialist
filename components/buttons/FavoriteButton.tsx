@@ -1,6 +1,6 @@
-import Hart from '@/assets/icons/hart.svg';
 import HartSolid from '@/assets/icons/hart-solid.svg';
-import { useFavorites } from '@/utils/useFavorites';
+import Hart from '@/assets/icons/hart.svg';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -13,13 +13,13 @@ interface FavoriteButtonProps {
 	onFavoriteChange?: (isLiked: boolean) => void;
 }
 
-export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
+export const FavoriteButton = ({
 	productId,
 	tableName,
 	productData,
-	size = 'medium',
+	size = 'small',
 	onFavoriteChange,
-}) => {
+}: FavoriteButtonProps) => {
 	const { isFavorite, toggleFavorite, refreshFavorites } = useFavorites();
 	const [isLiked, setIsLiked] = useState(false);
 

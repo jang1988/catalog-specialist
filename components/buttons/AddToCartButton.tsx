@@ -1,4 +1,4 @@
-import { useCart } from '@/utils/useCart';
+import { useCart } from '@/hooks/useCart';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import { Check, ShoppingCart } from 'react-native-feather';

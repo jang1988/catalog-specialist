@@ -1,9 +1,9 @@
-import CategoryCard from '@/components/category/CategoryCard';
+import { CategoryCard } from '@/components/cards/CategoryCard';
+import { CategorySectionSkeleton } from '@/components/loading/CategoryCardSkeleton';
 import { useEffect, useRef } from 'react';
 import { FlatList, Text } from 'react-native';
-import { CategorySectionSkeleton } from '../CategoryCardSkeleton';
 
-export default function CategoriesSection({
+export const CategoriesSection = ({
 	data,
 	loading,
 	error,
@@ -11,7 +11,7 @@ export default function CategoriesSection({
 	data: any[];
 	loading: boolean;
 	error: Error | null;
-}) {
+}) => {
 	const flatListRef = useRef<FlatList>(null);
 
 	useEffect(() => {
@@ -77,4 +77,4 @@ export default function CategoriesSection({
 			/>
 		</>
 	);
-}
+};

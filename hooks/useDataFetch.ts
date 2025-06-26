@@ -1,5 +1,5 @@
+import { supabase } from '@/services/supabase';
 import { GroupResponse, Product } from '@/types/interfaces';
-import { supabase } from '@/utils/supabase';
 
 // Константы для конфигурации
 const PRODUCT_TABLES = [
@@ -128,8 +128,7 @@ const createTableLabel = (tableName: ProductTable): string => {
 /**
  * Загружает список рекомендуемых товаров
  */
-export const fetchRecomends = async (
-): Promise<Array<any>> => {
+export const fetchRecomends = async (): Promise<Array<any>> => {
 	try {
 		const { data: recomendations, error } = await supabase
 			.from('recomends_card')
@@ -141,9 +140,9 @@ export const fetchRecomends = async (
 
 		// Загружаем каждый товар из указанной таблицы
 		const fullItems = await Promise.all(
-			recomendations.map(async (item) => {
+			recomendations.map(async item => {
 				const { product_table, id } = item;
-				
+
 				// Используем resolveTableName для унификации названия таблицы
 				const tableName = resolveTableName(product_table);
 
@@ -156,10 +155,10 @@ export const fetchRecomends = async (
 				if (error || !data) return null;
 
 				// Используем единообразную метку таблицы
-				return { 
-					...data, 
+				return {
+					...data,
 					table: createTableLabel(tableName),
-					_originalSource: product_table // сохраняем оригинальное название для отладки
+					_originalSource: product_table, // сохраняем оригинальное название для отладки
 				};
 			})
 		);
@@ -187,13 +186,13 @@ export const fetchProductById = async (
 			.select('*')
 			.eq('id', id)
 			.single();
-		
+
 		if (error) throw error;
-		
+
 		// Добавляем единообразную метку таблицы
 		return {
 			...data,
-			table: createTableLabel(tableName)
+			table: createTableLabel(tableName),
 		};
 	} catch (error) {
 		return handleError('загрузка товара', error);
@@ -277,7 +276,7 @@ export const fetchProductsByGroup = async (
 		const results = await Promise.all(queries);
 
 		// Проверяем ошибки
-		results.forEach((result) => {
+		results.forEach(result => {
 			if (result.error) throw result.error;
 		});
 

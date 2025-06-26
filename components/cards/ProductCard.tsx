@@ -57,7 +57,7 @@ const SpecificationItem: React.FC<SpecItemProps> = ({
 };
 
 // Основной компонент карточки товара
-export default function ProductCard({
+export const ProductCard = ({
 	id,
 	name,
 	img_url,
@@ -75,7 +75,7 @@ export default function ProductCard({
 	output_voltage,
 	group_table,
 	table,
-}: ProductCardProps) {
+}: ProductCardProps) => {
 	// Определяем источник данных для товара
 	const tableSource = table || group_table;
 
@@ -109,7 +109,7 @@ export default function ProductCard({
 			</TouchableOpacity>
 		</Link>
 	);
-}
+};
 
 // Компонент изображения товара
 const ProductImage: React.FC<{ source: string }> = ({ source }) => (

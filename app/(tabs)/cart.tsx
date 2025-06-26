@@ -1,7 +1,7 @@
-import CheckoutButton from '@/components/CheckoutButton';
+import { CheckoutButton } from '@/components/buttons/CheckoutButton';
 import { images } from '@/constants/images';
-import { supabase } from '@/utils/supabase';
-import { useCart } from '@/utils/useCart';
+import { useCart } from '@/hooks/useCart';
+import { supabase } from '@/services/supabase';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
@@ -16,13 +16,13 @@ import {
 	View,
 } from 'react-native';
 
-export default function Cart() {
-	const { clearCart } = useCart();
+const Cart = () => {
 	const router = useRouter();
 	const {
 		cartItems,
 		loading,
 		user,
+		clearCart,
 		loadCart,
 		updateQuantity,
 		removeFromCart,
@@ -129,48 +129,22 @@ export default function Cart() {
 	};
 
 	const QuantityControls = ({ item }: { item: any }) => {
-		const isNumericPrice = !isNaN(Number(item.product_data?.price));
-
 		return (
 			<View className='flex-row items-center bg-dark-200 rounded-lg'>
 				<TouchableOpacity
 					className='px-3 py-2'
 					onPress={() => handleQuantityChange(item, item.quantity - 1)}
-					disabled={!isNumericPrice}
 				>
-					<Text
-						className={`text-lg font-bold ${
-							isNumericPrice ? 'text-white' : 'text-gray-500'
-						}`}
-					>
-						−
-					</Text>
+					<Text className={'text-lg font-bold text-white'}>−</Text>
 				</TouchableOpacity>
-				<View
-					className={`px-4 py-2 ${
-						isNumericPrice ? 'bg-dark-100' : 'bg-dark-200'
-					}`}
-				>
-					<Text
-						className={`font-semibold ${
-							isNumericPrice ? 'text-white' : 'text-gray-400'
-						}`}
-					>
-						{item.quantity}
-					</Text>
+				<View className={'px-4 py-2 bg-dark-100'}>
+					<Text className={'font-semibold text-white'}>{item.quantity}</Text>
 				</View>
 				<TouchableOpacity
 					className='px-3 py-2'
 					onPress={() => handleQuantityChange(item, item.quantity + 1)}
-					disabled={!isNumericPrice}
 				>
-					<Text
-						className={`text-lg font-bold ${
-							isNumericPrice ? 'text-white' : 'text-gray-500'
-						}`}
-					>
-						+
-					</Text>
+					<Text className={'text-lg font-bold text-white'}>+</Text>
 				</TouchableOpacity>
 			</View>
 		);
@@ -399,7 +373,6 @@ export default function Cart() {
 						// Системная информация
 						from_name: 'Магазин',
 						to_name: 'Менеджер',
-						// to_email: 'pustota1988@gmail.com',
 						email: user?.user_metadata?.email,
 
 						// Информация о заказе
@@ -470,11 +443,9 @@ export default function Cart() {
 							Товари з ціною "За запитом"
 						</Text>
 						<Text className='text-yellow-400 text-base font-medium'>
-							{
-								cartItems.filter(item =>
-									isNaN(Number(item.product_data?.price))
-								).length
-							}{' '}
+							{cartItems
+								.filter(item => isNaN(Number(item.product_data.price)))
+								.reduce((total, item) => total + item.quantity, 0)}{' '}
 							шт.
 						</Text>
 					</View>
@@ -508,10 +479,10 @@ export default function Cart() {
 						Увійдіть в акаунт, щоб переглядати кошик
 					</Text>
 					<TouchableOpacity
-						className='bg-purple-600 px-6 py-3 rounded-full'
+						className='rounded-full flex-row items-center justify-center px-6 min-h-[48px] shadow-md hover:shadow-lg active:shadow-sm bg-bluer border-blue-600 border-[0.7px] shadow-blue-300'
 						onPress={() => router.push('/profile')}
 					>
-						<Text className='text-white font-semibold'>Увійти</Text>
+						<Text className='font-semibold text-center tracking-wider text-lg text-white'>Увійти</Text>
 					</TouchableOpacity>
 				</View>
 			) : cartItems.length === 0 ? (
@@ -523,10 +494,10 @@ export default function Cart() {
 						Додайте товари до кошика, щоб почати покупки
 					</Text>
 					<TouchableOpacity
-						className='bg-purple-600 px-6 py-3 rounded-full'
+						className='rounded-full flex-row items-center justify-center px-6 min-h-[48px] shadow-md hover:shadow-lg active:shadow-sm bg-bluer border-blue-600 border-[0.7px] shadow-blue-300'
 						onPress={() => router.push('/')}
 					>
-						<Text className='text-white font-semibold'>Перейти до покупок</Text>
+						<Text className='font-semibold text-center tracking-wider text-lg text-white'>Перейти до покупок</Text>
 					</TouchableOpacity>
 				</View>
 			) : (
@@ -565,4 +536,6 @@ export default function Cart() {
 			)}
 		</View>
 	);
-}
+};
+
+export default Cart;

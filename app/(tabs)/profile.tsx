@@ -1,7 +1,7 @@
 import LockIcon from '@/assets/icons/lock.svg';
 import ShowIcon from '@/assets/icons/show.svg';
 import { images } from '@/constants/images';
-import { supabase } from '@/utils/supabase';
+import { supabase } from '@/services/supabase';
 import { Session, User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import {
@@ -24,7 +24,7 @@ interface FormErrors {
 	phone?: string;
 }
 
-export default function Profile() {
+const Profile = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
@@ -428,4 +428,6 @@ export default function Profile() {
 			</ScrollView>
 		</KeyboardAvoidingView>
 	);
-}
+};
+
+export default Profile;

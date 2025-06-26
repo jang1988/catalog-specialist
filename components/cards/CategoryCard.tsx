@@ -3,7 +3,7 @@ import { Link } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-export default function CategoryCard({ id, name, img_url }: any) {
+export const CategoryCard = ({ id, name, img_url }: any) => {
 	const blurhash = 'L0000y%M00t7_NM{Rjof00ayt7of';
 
 	return (
@@ -27,4 +27,4 @@ export default function CategoryCard({ id, name, img_url }: any) {
 			</TouchableOpacity>
 		</Link>
 	);
-}
+};

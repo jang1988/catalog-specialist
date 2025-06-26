@@ -1,6 +1,6 @@
-import { FavoriteButton } from '@/components/FavoriteButton';
+import { FavoriteButton } from '@/components/buttons/FavoriteButton';
 import { images } from '@/constants/images';
-import { useFavorites } from '@/utils/useFavorites';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
@@ -14,7 +14,7 @@ import {
 	View,
 } from 'react-native';
 
-export default function Saved() {
+const Saved = () => {
 	const router = useRouter();
 	const { favorites, loading, user, loadFavorites } = useFavorites();
 
@@ -45,7 +45,7 @@ export default function Saved() {
 		router.push(path as any);
 	};
 
-	const PriceDisplay = ({ currentPrice, oldPrice }: any) => {
+	const PriceDisplay = ({ currentPrice }: any) => {
 		const formatPrice = (price: string | number): string => {
 			return isNaN(Number(price))
 				? String(price)
@@ -79,9 +79,7 @@ export default function Saved() {
 				<View className='relative'>
 					<Image
 						source={{
-							uri:
-								productData?.img_url ||
-								'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=Нет+изображения',
+							uri: productData.img_url,
 						}}
 						className='w-full h-32'
 						resizeMode='cover'
@@ -91,7 +89,6 @@ export default function Saved() {
 							productId={item.product_id}
 							tableName={item.table_name}
 							productData={productData}
-							size='small'
 						/>
 					</View>
 					{productData?.old_price && productData?.price && (
@@ -119,10 +116,7 @@ export default function Saved() {
 
 					<View className='flex-row items-center justify-between'>
 						<View>
-							<PriceDisplay
-								currentPrice={productData?.price}
-								oldPrice={productData?.old_price}
-							/>
+							<PriceDisplay currentPrice={productData?.price} />
 						</View>
 					</View>
 				</View>
@@ -149,10 +143,12 @@ export default function Saved() {
 						Увійдіть в акаунт, щоб переглядати обране
 					</Text>
 					<TouchableOpacity
-						className='bg-purple-600 px-6 py-3 rounded-full'
+						className='rounded-full flex-row items-center justify-center px-6 min-h-[48px] shadow-md hover:shadow-lg active:shadow-sm bg-bluer border-blue-600 border-[0.7px] shadow-blue-300'
 						onPress={() => router.push('/profile')}
 					>
-						<Text className='text-white font-semibold'>Увійти</Text>
+						<Text className='font-semibold text-center tracking-wider text-lg text-white'>
+							Увійти
+						</Text>
 					</TouchableOpacity>
 				</View>
 			) : favorites.length === 0 ? (
@@ -164,10 +160,12 @@ export default function Saved() {
 						Додайте товари в обране, натиснувши на ❤️
 					</Text>
 					<TouchableOpacity
-						className='bg-purple-600 px-6 py-3 rounded-full'
+						className='rounded-full flex-row items-center justify-center px-6 min-h-[48px] shadow-md hover:shadow-lg active:shadow-sm bg-bluer border-blue-600 border-[0.7px] shadow-blue-300'
 						onPress={() => router.push('/')}
 					>
-						<Text className='text-white font-semibold'>Перейти до покупок</Text>
+						<Text className='font-semibold text-center tracking-wider text-lg text-white'>
+							Перейти до покупок
+						</Text>
 					</TouchableOpacity>
 				</View>
 			) : (
@@ -177,16 +175,16 @@ export default function Saved() {
 					numColumns={2}
 					columnWrapperStyle={{ justifyContent: 'space-between' }}
 					contentContainerStyle={{
-						paddingBottom: 20,
+						paddingBottom: 80,
 						paddingTop: 20,
 						paddingHorizontal: 16,
 						flexGrow: 1,
-						minHeight: '100%', // Добавьте это
+						minHeight: '100%',
 					}}
 					style={{ flex: 1 }}
 					ListHeaderComponent={
 						<Text className='text-xl font-bold mb-4 text-white px-5 mt-4'>
-							Кошик
+							Обране
 						</Text>
 					}
 					renderItem={renderProductCard}
@@ -197,12 +195,13 @@ export default function Saved() {
 							onRefresh={onRefresh}
 							tintColor='#ab8bff'
 							colors={['#ab8bff']}
-							progressViewOffset={50} // Добавьте это
+							progressViewOffset={50}
 						/>
 					}
-					ListEmptyComponent={<View style={{ height: '100%' }} />} // Добавьте это
 				/>
 			)}
 		</View>
 	);
-}
+};
+
+export default Saved;

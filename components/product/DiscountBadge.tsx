@@ -19,9 +19,7 @@ interface DiscountBadgeProps {
 	actualVariant: Variant;
 }
 
-export const PremiumDiscountBadge: React.FC<DiscountBadgeProps> = ({
-	actualVariant,
-}) => {
+export const DiscountBadge = ({ actualVariant }: DiscountBadgeProps) => {
 	const scale = useSharedValue(0);
 	const wiggle = useSharedValue(0);
 	const glow = useSharedValue(0);

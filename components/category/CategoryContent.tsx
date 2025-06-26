@@ -1,5 +1,5 @@
-import GroupCard from '@/components/GroupCard';
-import ProductCard from '@/components/ProductCard';
+import { GroupCard } from '@/components/cards/GroupCard';
+import { ProductCard } from '@/components/cards/ProductCard';
 import { CategoryContentProps } from '@/types/interfaces';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {

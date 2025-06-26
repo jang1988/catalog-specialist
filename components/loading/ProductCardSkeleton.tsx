@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
 	Easing,
 	useAnimatedStyle,
@@ -8,7 +8,7 @@ import Animated, {
 	withTiming,
 } from 'react-native-reanimated';
 
-export function ProductCardSkeleton() {
+export const ProductCardSkeleton = () => {
 	const shimmerPosition = useSharedValue(-1);
 
 	useEffect(() => {
@@ -76,27 +76,4 @@ export function ProductCardSkeleton() {
 			</View>
 		</View>
 	);
-}
-
-export function RecommendsSectionSkeleton() {
-	// Create an array of 4 items for the skeleton (2 rows x 2 columns)
-	const skeletonData = Array(4).fill({ id: 0 });
-
-	return (
-		<>
-			<Text className='text-white text-lg font-bold mt-5 mb-3 px-5'>
-				РЕКОМЕНДОВАНІ
-			</Text>
-			<FlatList
-				data={skeletonData}
-				renderItem={() => <ProductCardSkeleton />}
-				keyExtractor={(_, index) => index.toString()}
-				numColumns={2}
-				columnWrapperStyle={{ justifyContent: 'center', gap: 16 }}
-				showsVerticalScrollIndicator={false}
-				scrollEnabled={false}
-				nestedScrollEnabled={true}
-			/>
-		</>
-	);
-}
+};

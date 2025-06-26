@@ -1,4 +1,4 @@
-import { supabase } from '@/utils/supabase';
+import { supabase } from '@/services/supabase';
 import { User } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';

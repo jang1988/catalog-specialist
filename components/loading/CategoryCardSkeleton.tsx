@@ -52,7 +52,7 @@ export function CategoryCardSkeleton() {
 	);
 }
 
-export function CategorySectionSkeleton() {
+export const CategorySectionSkeleton = () => {
 	// Создаем массив с уникальными ключами
 	const skeletonData = Array.from({ length: 6 }, (_, index) => ({ id: index }));
 
@@ -73,4 +73,4 @@ export function CategorySectionSkeleton() {
 			/>
 		</View>
 	);
-}
+};

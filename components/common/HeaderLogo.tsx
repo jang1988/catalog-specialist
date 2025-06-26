@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { Dimensions, View } from 'react-native';
 const { width } = Dimensions.get('window');
 
-export default function HeaderLogo() {
+export const HeaderLogo = () => {
 	const blurhash = 'L0000y%M00t7_NM{Rjof00ayt7of';
 
 	return (
@@ -35,4 +35,4 @@ export default function HeaderLogo() {
 			/>
 		</View>
 	);
-}
+};

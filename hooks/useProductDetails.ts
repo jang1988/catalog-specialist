@@ -1,5 +1,5 @@
+import { fetchProductById } from '@/hooks/useDataFetch';
 import { Product, Variant } from '@/types/interfaces';
-import { fetchProductById } from '@/utils/useDataFetch';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 export function useProductDetails(
@@ -51,7 +51,7 @@ export function useProductDetails(
 				? table[0]
 				: table
 			: undefined;
-			
+
 		async function fetchData() {
 			try {
 				const data = await fetchProductById(normalizedId, normalizedTable);

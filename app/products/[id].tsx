@@ -1,12 +1,12 @@
-import { AddToCartButton } from '@/components/AddToCartButton';
-import CallButton from '@/components/CallButton';
+import { AddToCartButton } from '@/components/buttons/AddToCartButton';
+import { CallButton } from '@/components/buttons/CallButton';
 import { DeliveryInfo } from '@/components/product/DeliveryInfo';
-import { PremiumDiscountBadge } from '@/components/product/DiscountBadge';
+import { DiscountBadge } from '@/components/product/DiscountBadge';
 import { ProductDesc } from '@/components/product/ProductDesc';
 import { ProductImage } from '@/components/product/ProductImage';
 import { ProductInfo } from '@/components/product/ProductInfo';
 import { ProductOption } from '@/components/product/ProductOption';
-import { useProductDetails } from '@/utils/useProductDetails';
+import { useProductDetails } from '@/hooks/useProductDetails';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
 	ActivityIndicator,
@@ -336,7 +336,7 @@ export default function ProductDetails() {
 						onImageError={() => setImageError(true)}
 					/>
 					{actualVariant?.old_price && (
-						<PremiumDiscountBadge actualVariant={actualVariant} />
+						<DiscountBadge actualVariant={actualVariant} />
 					)}
 				</View>
 

@@ -1,4 +1,4 @@
-import { FavoriteButton } from '@/components/FavoriteButton';
+import { FavoriteButton } from '@/components/buttons/FavoriteButton';
 import { useRouter } from 'expo-router';
 import {
 	Image,
@@ -8,7 +8,6 @@ import {
 	View,
 } from 'react-native';
 import { ChevronLeft } from 'react-native-feather';
-import { AddToCartButton } from '../AddToCartButton';
 
 type ProductImageProps = {
 	imageUrl?: string;
@@ -24,7 +23,6 @@ export const ProductImage = ({
 	productId,
 	tableName,
 	productData,
-	actualVariant,
 	onImageError,
 }: ProductImageProps) => {
 	const router = useRouter();
