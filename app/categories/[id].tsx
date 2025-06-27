@@ -10,7 +10,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-export default function Category() {
+const Category = () => {
 	const router = useRouter();
 	const { id } = useLocalSearchParams();
 	const categoryId = Array.isArray(id) ? id[0] : id;
@@ -117,4 +117,6 @@ export default function Category() {
 			</View>
 		</View>
 	);
-}
+};
+
+export default Category;
