@@ -1,22 +1,16 @@
-import { GroupCard } from '@/components/cards/GroupCard';
 import { ProductCard } from '@/components/cards/ProductCard';
-import { CategoryContentProps } from '@/types/interfaces';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { CategoryGroup } from '@/components/category/CategoryGroup';
+import { CategoryContentProps, Product } from '@/types/interfaces';
+import { useCallback, useEffect, useRef } from 'react';
 import {
 	ActivityIndicator,
 	FlatList,
-	ScrollView,
 	Text,
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import Animated, {
-	FadeInDown,
-	FadeOutUp,
-	LinearTransition,
-} from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
-const AnimatedView = Animated.createAnimatedComponent(View);
 export const CategoryContent = ({
 	loading,
 	error,
@@ -26,67 +20,20 @@ export const CategoryContent = ({
 	onGroupPress,
 	onRetry,
 }: CategoryContentProps) => {
-	const scrollViewRef = useRef<ScrollView>(null);
+	const listRef = useRef<FlatList<Product>>(null);
 
 	useEffect(() => {
-		scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+		listRef.current?.scrollToOffset({ offset: 0, animated: false });
 	}, [selectedGroup]);
 
-	// Данные о выбранной группе - вычисляем только когда есть selectedGroup
-	const selectedGroupData = useMemo(() => {
-		if (!selectedGroup) return null;
-		return groups.find(g => g.id === selectedGroup) ?? null;
-	}, [selectedGroup, groups]);
-
-	// Мемоизируем все карточки групп
-	const memoizedGroupCards = useMemo(() => {
-		return groups.map((group, index) => (
-			<AnimatedView
-				key={`group-${group.id}`}
-				entering={FadeInDown.duration(400).delay(index * 60)}
-				exiting={FadeOutUp.duration(200)}
-				layout={LinearTransition.springify().damping(14)}
-			>
-				<GroupCard
-					group={group}
-					isSelected={false}
-					onPress={() => onGroupPress(group.id)}
-				/>
-			</AnimatedView>
-		));
-	}, [groups, onGroupPress]);
-
 	const renderProductItem = useCallback(
-		({ item }: { item: (typeof products)[0] }) => <ProductCard {...item} />,
+		({ item }: { item: (typeof products)[0] }) => (
+			<Animated.View layout={LinearTransition.springify().damping(17)}>
+				<ProductCard {...item} />
+			</Animated.View>
+		),
 		[]
 	);
-
-	const memoizedProductsList = useMemo(() => {
-		if (products.length === 0) return null;
-
-		return (
-			<Animated.View layout={LinearTransition.springify().damping(17)}>
-				<Text className='text-white text-xl font-bold mb-4 ml-4'>
-					Товари в категорії
-				</Text>
-				<FlatList
-					data={products}
-					renderItem={renderProductItem}
-					keyExtractor={item => item.id.toString()}
-					numColumns={2}
-					columnWrapperStyle={{ justifyContent: 'center', gap: 16 }}
-					showsVerticalScrollIndicator={false}
-					scrollEnabled={false}
-					nestedScrollEnabled={true}
-					// Дополнительные оптимизации для FlatList
-					removeClippedSubviews={true}
-					maxToRenderPerBatch={10} // Рендерим по 10 элементов за раз
-					initialNumToRender={10} // Изначально рендерим только 10
-					windowSize={5} // Уменьшаем окно рендеринга
-				/>
-			</Animated.View>
-		);
-	}, [products, renderProductItem]);
 
 	if (loading) {
 		return (
@@ -113,42 +60,55 @@ export const CategoryContent = ({
 	}
 
 	return (
-		<ScrollView
-			ref={scrollViewRef}
+		<FlatList
+			ref={listRef}
+			data={products}
+			renderItem={renderProductItem}
+			keyExtractor={item => item.id.toString()}
+			numColumns={2}
+			columnWrapperStyle={{
+				gap: 16,
+				justifyContent: 'center',
+				width: '45%',
+				marginHorizontal: 'auto',
+			}}
+			showsVerticalScrollIndicator={false}
 			contentContainerStyle={{
 				paddingVertical: 12,
 				paddingBottom: 60,
 			}}
-			showsVerticalScrollIndicator={false}
-		>
-			<View className='space-y-3'>
-				{selectedGroupData ? (
-					<AnimatedView
-						key={`selected-${selectedGroupData.id}`}
-						entering={FadeInDown.duration(350)}
-						exiting={FadeOutUp.duration(250)}
-						layout={LinearTransition.springify().damping(12)}
-					>
-						<GroupCard
-							group={selectedGroupData}
-							isSelected={true}
-							onPress={() => onGroupPress(null)}
+			ListHeaderComponent={
+				<>
+					<View className='space-y-3'>
+						<CategoryGroup
+							groups={groups}
+							selectedGroup={selectedGroup}
+							onGroupPress={onGroupPress}
 						/>
-					</AnimatedView>
-				) : (
-					memoizedGroupCards
-				)}
-			</View>
-
-			{/* Показываем сообщение о пустой категории для любого случая, когда нет товаров */}
-			{products.length === 0 && !loading && (
+					</View>
+					{products.length > 0 && (
+						<Animated.Text
+							layout={LinearTransition.springify().damping(17)}
+							className='text-white text-xl font-bold mb-4 ml-4'
+						>
+							Товари в категорії
+						</Animated.Text>
+					)}
+				</>
+			}
+			ListEmptyComponent={
 				<Text className='text-gray-400 text-center mt-8 text-base'>
 					{selectedGroup
-						? 'Товары в этой категории не найдены'
-						: 'Выберите категорию для просмотра товаров'}
+						? 'Товари в цій категорії не знайдені'
+						: 'Виберіть категорію для перегляду товарів'}
 				</Text>
-			)}
-			{memoizedProductsList}
-		</ScrollView>
+			}
+			removeClippedSubviews={true}
+			maxToRenderPerBatch={10}
+			initialNumToRender={10}
+			windowSize={5}
+			nestedScrollEnabled={true}
+			extraData={selectedGroup}
+		/>
 	);
 };

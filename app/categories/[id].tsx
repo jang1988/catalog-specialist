@@ -104,7 +104,7 @@ const Category = () => {
 				onBackPress={handleBackPress}
 			/>
 
-			<View className='flex-1 p-2'>
+			<View className='flex-1 p-1'>
 				<CategoryContent
 					loading={loading}
 					error={error}

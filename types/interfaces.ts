@@ -1,7 +1,12 @@
+// 🛍 Продукт и его варианты
 export interface Product {
 	id: number;
 	name: string;
 	img_url: string;
+	desc?: string;
+	site?: string;
+
+	// Характеристики
 	thread?: string[];
 	voltage?: string[];
 	type?: string[];
@@ -12,18 +17,22 @@ export interface Product {
 	iso?: string;
 	view?: string;
 	torque?: string;
-	site?: string;
-	desc?: string;
+
 	variants?: Variant[];
 }
 
 export interface Variant {
 	model: string;
 	price: string;
+	old_price?: string;
+
+	// Основные характеристики
 	thread: string;
 	voltage: string;
 	type: string;
 	lever: string;
+
+	// Дополнительные параметры
 	delivery?: string;
 	flow?: string;
 	productivity?: string;
@@ -57,9 +66,9 @@ export interface Variant {
 	disc?: string;
 	input_voltage?: string;
 	output_voltage?: string;
-	old_price?: string;
 }
 
+// 🗂 Группы
 export interface GroupItem {
 	id: string;
 	name: string;
@@ -71,11 +80,12 @@ export interface GroupResponse {
 	table: string | null;
 }
 
+// 🔹 Компоненты и пропсы
 export interface CategoryContentProps {
 	loading: boolean;
 	error: string | null;
 	selectedGroup: string | null;
-	groups: Array<{ id: string; name: string; img_url: string }>;
+	groups: GroupItem[];
 	products: Product[];
 	onGroupPress: (id: string | null) => void;
 	onRetry: () => void;
@@ -102,3 +112,55 @@ export interface SearchBarProps {
 	editable?: boolean;
 	autoFocus?: boolean;
 }
+
+export interface AddToCartButtonProps {
+	productId: string;
+	tableName: string;
+	productData: ProductData | null;
+	actualVariant: ActualVariant | null;
+	size?: 'small' | 'large';
+	disabled?: boolean;
+	onAddSuccess?: () => void;
+	onAddError?: (error: string) => void;
+}
+
+export interface CheckoutButtonProps {
+	handleCheckout: () => void;
+	title?: string;
+	disabled?: boolean;
+	isLoading?: boolean;
+	isSuccess?: boolean;
+}
+
+export interface FavoriteButtonProps {
+	productId: string;
+	tableName: string;
+	productData?: ProductData;
+	size?: 'small' | 'medium' | 'large';
+	onFavoriteChange?: (isLiked: boolean) => void;
+}
+
+export interface CategoryGroupProps {
+	groups: GroupItem[];
+	selectedGroup: string | null;
+	onGroupPress: (id: string | null) => void;
+}
+
+// 💲 Цены и данные для корзины
+export interface ProductData {
+	name: string;
+	price: string | number;
+	old_price?: string | number;
+	img_url?: string;
+	desc?: string;
+}
+
+export interface ActualVariant {
+	price: string | number;
+	old_price?: string | number;
+	[key: string]: any;
+}
+
+// ⚡ Вспомогательные типы
+export type ButtonState = 'idle' | 'adding' | 'success';
+export type VisualState = 'disabled' | 'inCart' | 'success' | 'default';

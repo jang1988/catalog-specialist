@@ -6,15 +6,27 @@ import { Image, ImageBackground, Text, View } from 'react-native';
 const TabIcon = ({ focused, icon, title }: any) => {
 	if (focused) {
 		return (
-			<ImageBackground
-				source={images.highlight}
-				className='flex flex-col w-full flex-1 min-w-[100px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden'
+			<View
+				style={{
+					borderRadius: 9999,
+					shadowColor: '#93c5fd',
+					shadowOffset: { width: 0, height: 0 },
+					shadowOpacity: 1,
+					shadowRadius: 12,
+					elevation: 12,
+				}}
+				className='mt-4'
 			>
-				
-				<Image source={icon} tintColor='#151312' className='size-6' />
-
-				<Text className='text-secondary text-base font-bold ml-2'>{title}</Text>
-			</ImageBackground>
+				<ImageBackground
+					source={images.highlight}
+					className='flex flex-col w-full flex-1 min-w-[100px] min-h-16 justify-center items-center rounded-full overflow-hidden'
+				>
+					<Image source={icon} tintColor='#151312' className='size-6' />
+					<Text className='text-secondary text-base font-bold ml-2'>
+						{title}
+					</Text>
+				</ImageBackground>
+			</View>
 		);
 	}
 
@@ -43,8 +55,18 @@ export default function TabsLayout() {
 					marginBottom: 36,
 					height: 52,
 					position: 'absolute',
-					borderWidth: 1,
 					borderColor: '#138352',
+					// Тень для iOS
+					shadowColor: '#86efac', // примерно соответствует shadow-green-300
+					shadowOffset: {
+						width: 0,
+						height: 0, // аналог shadow-md
+					},
+					shadowOpacity: 1, // примерно соответствует shadow-md
+					shadowRadius: 5,
+
+					// Тень для Android
+					elevation: 5,
 				},
 			}}
 		>

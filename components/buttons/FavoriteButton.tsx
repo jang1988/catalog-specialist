@@ -1,17 +1,28 @@
 import HartSolid from '@/assets/icons/hart-solid.svg';
 import Hart from '@/assets/icons/hart.svg';
 import { useFavorites } from '@/hooks/useFavorites';
+import { FavoriteButtonProps } from '@/types/interfaces'
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-interface FavoriteButtonProps {
-	productId: string;
-	tableName: string;
-	productData?: any;
-	size?: 'small' | 'medium' | 'large';
-	onFavoriteChange?: (isLiked: boolean) => void;
-}
+const iconSizes = {
+	small: 18,
+	medium: 20,
+	large: 22,
+};
+
+const paddingSizes = {
+	small: 'p-1',
+	medium: 'p-2',
+	large: 'p-3',
+};
+
+const textSizes = {
+	small: 'text-base',
+	medium: 'text-xl',
+	large: 'text-2xl',
+};
 
 export const FavoriteButton = ({
 	productId,
@@ -22,13 +33,14 @@ export const FavoriteButton = ({
 }: FavoriteButtonProps) => {
 	const { isFavorite, toggleFavorite, refreshFavorites } = useFavorites();
 	const [isLiked, setIsLiked] = useState(false);
+	const [loading, setLoading] = useState(false);
 
-	// Обновляем локальное состояние при изменении глобального
+	// Синхронизация локального состояния с глобальным
 	useEffect(() => {
 		setIsLiked(isFavorite(productId, tableName));
-	}, [isFavorite(productId, tableName), productId, tableName]);
+	}, [productId, tableName, isFavorite]);
 
-	// Обновляем состояние при фокусе на экране
+	// Обновление при фокусе экрана
 	useFocusEffect(
 		useCallback(() => {
 			refreshFavorites();
@@ -36,64 +48,50 @@ export const FavoriteButton = ({
 	);
 
 	const handlePress = async () => {
-		const result = await toggleFavorite(productId, tableName, productData);
-		if (result !== undefined) {
-			// Обновляем локальное состояние сразу для лучшего UX
-			const newIsLiked = !isLiked;
-			setIsLiked(newIsLiked);
+		if (loading) return; // блокируем повторные клики
 
-			// Вызываем коллбек для обновления родительского компонента
-			if (onFavoriteChange) {
-				onFavoriteChange(newIsLiked);
+		setLoading(true);
+		try {
+			const result = await toggleFavorite(productId, tableName, productData);
+			if (result !== undefined) {
+				// Обновляем локальное состояние сразу
+				const newIsLiked = !isLiked;
+				setIsLiked(newIsLiked);
+
+				if (onFavoriteChange) {
+					onFavoriteChange(newIsLiked);
+				}
 			}
+		} catch (error) {
+			console.error('Ошибка при переключении избранного:', error);
+			// Тут можно показать пользователю уведомление об ошибке
+		} finally {
+			setLoading(false);
 		}
 	};
 
-	const getIconSize = () => {
-		switch (size) {
-			case 'small':
-				return 'text-base';
-			case 'medium':
-				return 'text-xl';
-			case 'large':
-				return 'text-2xl';
-			default:
-				return 'text-xl';
-		}
-	};
-
-	const getPadding = () => {
-		switch (size) {
-			case 'small':
-				return 'p-1';
-			case 'medium':
-				return 'p-2';
-			case 'large':
-				return 'p-3';
-			default:
-				return 'p-2';
-		}
-	};
+	const iconSize = iconSizes[size] || 24;
+	const padding = paddingSizes[size] || 'p-2';
+	const textSize = textSizes[size] || 'text-xl';
 
 	return (
 		<TouchableOpacity
 			onPress={handlePress}
-			className={`${getPadding()} rounded-full bg-black/20 backdrop-blur-sm active:bg-black/40`}
+			className={`${padding} rounded-full bg-black/20 backdrop-blur-sm active:bg-black/40`}
 			accessibilityLabel={
 				isLiked ? 'Удалить из избранного' : 'Добавить в избранное'
 			}
 			accessibilityRole='button'
+			disabled={loading} // дизейблим кнопку во время загрузки
 		>
 			<View className='items-center'>
 				<Text
-					className={`${getIconSize()} ${
-						isLiked ? 'text-red-500' : 'text-white/70'
-					}`}
+					className={`${textSize} ${isLiked ? 'text-red-500' : 'text-white/70'}`}
 				>
 					{isLiked ? (
-						<HartSolid width={24} height={24} />
+						<HartSolid width={iconSize} height={iconSize} />
 					) : (
-						<Hart width={24} height={24} />
+						<Hart width={iconSize} height={iconSize} />
 					)}
 				</Text>
 			</View>

@@ -5,10 +5,10 @@ import { DiscountBadge } from '@/components/product/DiscountBadge';
 import { ProductDesc } from '@/components/product/ProductDesc';
 import { ProductImage } from '@/components/product/ProductImage';
 import { ProductInfo } from '@/components/product/ProductInfo';
-import { ProductOptionsSection } from '@/components/product/ProductOptionsSection'
+import { ProductOptionsSection } from '@/components/product/ProductOptionsSection';
 import { useProductDetails } from '@/hooks/useProductDetails';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react'
+import { useMemo } from 'react';
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -16,7 +16,6 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-
 
 // Компонент для отображения состояния загрузки
 const LoadingState = () => (
@@ -62,7 +61,6 @@ const ProductNotFoundState = ({ onGoBack }: { onGoBack: () => void }) => (
 
 // Компонент для отображения опций продукта
 
-
 export default function ProductDetails() {
 	const router = useRouter();
 	const { id, table } = useLocalSearchParams();
@@ -89,7 +87,7 @@ export default function ProductDetails() {
 		}
 		return product?.img_url;
 	}, [imageError, product]);
-	
+
 	const productData = useMemo(() => {
 		if (!product || !actualVariant) return null;
 		return {

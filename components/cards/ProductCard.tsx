@@ -97,7 +97,7 @@ export const ProductCard = ({
 
 	return (
 		<Link href={`/products/${id}?table=${tableSource}`} asChild>
-			<TouchableOpacity className='w-[45%] mb-4'>
+			<TouchableOpacity className='w-full mb-4'>
 				{/* Изображение товара */}
 				<ProductImage source={img_url} />
 

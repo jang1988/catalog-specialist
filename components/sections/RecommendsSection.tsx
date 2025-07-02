@@ -28,8 +28,16 @@ export const RecommendsSection = ({
 				renderItem={({ item }) => <ProductCard {...item} />}
 				keyExtractor={item => item.id.toString()}
 				numColumns={2}
-				columnWrapperStyle={{ justifyContent: 'center', gap: 16 }}
-				style={{ paddingBottom: 20 }}
+				columnWrapperStyle={{
+					gap: 16,
+					justifyContent: 'center',
+					width: '45%',
+					marginHorizontal: 'auto',
+				}}
+				contentContainerStyle={{
+					paddingBottom: 60,
+					paddingHorizontal: 2,
+				}}
 				showsVerticalScrollIndicator={false}
 				scrollEnabled={false}
 				nestedScrollEnabled={true}

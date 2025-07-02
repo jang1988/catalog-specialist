@@ -1,13 +1,5 @@
-import React from 'react';
+import { CheckoutButtonProps } from '@/types/interfaces';
 import { Text, TouchableOpacity } from 'react-native';
-
-interface CheckoutButtonProps {
-	handleCheckout: () => void;
-	title?: string;
-	disabled?: boolean;
-	isLoading?: boolean;
-	isSuccess?: boolean;
-}
 
 export const CheckoutButton = ({ handleCheckout }: CheckoutButtonProps) => {
 	return (
