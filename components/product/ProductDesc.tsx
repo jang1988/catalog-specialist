@@ -1,21 +1,253 @@
-import { Text, View } from 'react-native';
+import { createTableMatrix } from '@/utils/tableMatrix';
+import React from 'react';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import RenderHtml, {
+	HTMLContentModel,
+	HTMLElementModel,
+	MixedStyleRecord,
+	TNodeChildrenRenderer,
+} from 'react-native-render-html';
 
 type ProductDescProps = {
-  description?: string;
+	description?: string;
 };
-export const ProductDesc = ({ description }: ProductDescProps) => {
-	return (
-		<>
-			{description && (
-				<View className='mt-4 bg-gray-800/40 p-4 rounded-lg'>
-					<Text className='text-white text-lg font-semibold mb-2'>
-						Технічні характеристики:
-					</Text>
-					<Text className='text-light-200 text-base leading-6'>
-						{description}
-					</Text>
-				</View>
-			)}
-		</>
+
+export const ProductDesc = React.memo(({ description }: ProductDescProps) => {
+	const { width } = useWindowDimensions();
+
+	const tagsStyles = React.useMemo<MixedStyleRecord>(
+		() => ({
+			body: {
+				color: '#ffffff',
+				fontSize: 16,
+				lineHeight: 24,
+			},
+			p: {
+				color: '#e5e7eb',
+				fontSize: 16,
+				lineHeight: 24,
+				marginBottom: 12,
+			},
+			li: {
+				color: '#e5e7eb',
+				fontSize: 16,
+				lineHeight: 24,
+				marginBottom: 4,
+			},
+			h1: {
+				color: '#ffffff',
+				fontSize: 22,
+				fontWeight: 'bold',
+				marginVertical: 16,
+			},
+			h2: {
+				color: '#ffffff',
+				fontSize: 20,
+				fontWeight: 'bold',
+				marginVertical: 14,
+			},
+			h3: {
+				color: '#ffffff',
+				fontSize: 18,
+				fontWeight: 'bold',
+				marginVertical: 12,
+			},
+			h4: {
+				color: '#ffffff',
+				fontSize: 16,
+				fontWeight: 'bold',
+				marginVertical: 10,
+			},
+			strong: {
+				fontWeight: 'bold',
+				color: '#ffffff',
+			},
+			em: {
+				fontStyle: 'italic',
+				color: '#e5e7eb',
+			},
+			ul: {
+				marginVertical: 8,
+			},
+			ol: {
+				marginVertical: 8,
+			},
+			table: {
+				borderWidth: 1,
+				borderColor: '#4b5563',
+				marginVertical: 8,
+				borderRadius: 4,
+				width: '100%',
+				overflow: 'hidden',
+			},
+			th: {
+				borderWidth: 1,
+				borderColor: '#4b5563',
+				padding: 4,
+				color: '#ffffff',
+				backgroundColor: '#374151',
+				fontWeight: 'bold',
+				fontSize: 8,
+				lineHeight: 10,
+			},
+			td: {
+				borderWidth: 1,
+				borderColor: '#4b5563',
+				padding: 4,
+				color: '#e5e7eb',
+				fontSize: 12,
+				lineHeight: 14,
+			},
+			tr: {
+				flexDirection: 'row',
+			},
+			caption: {
+				fontSize: 14,
+				color: '#9ca3af',
+				fontStyle: 'italic',
+				marginBottom: 8,
+				marginLeft: 8,
+			},
+			label: {
+				fontSize: 14,
+				color: '#9ca3af',
+				marginBottom: 8,
+			},
+			blockquote: {
+				backgroundColor: '#374151',
+				borderLeftWidth: 4,
+				borderLeftColor: '#60a5fa',
+				padding: 12,
+				marginVertical: 12,
+				borderRadius: 4,
+			},
+			code: {
+				backgroundColor: '#374151',
+				padding: 4,
+				borderRadius: 4,
+				color: '#f3f4f6',
+			},
+			pre: {
+				backgroundColor: '#1f2937',
+				padding: 12,
+				borderRadius: 6,
+				marginVertical: 12,
+			},
+			img: {
+				maxWidth: width - 30,
+				marginVertical: 12,
+				borderRadius: 6,
+			},
+		}),
+		[width]
 	);
-};
+
+	const customHTMLElementModels = React.useMemo(
+		() => ({
+			caption: HTMLElementModel.fromCustomModel({
+				tagName: 'caption',
+				contentModel: HTMLContentModel.block,
+			}),
+		}),
+		[]
+	);
+
+	const renderers = React.useMemo(
+		() => ({
+			table: (props: any) => {
+				const { tnode } = props;
+				const { matrix, maxCols } = createTableMatrix(tnode);
+
+				if (matrix.length === 0) return null;
+
+				const minWidth = 100;
+				const availableWidth = width - 30;
+				const cellWidth = Math.max(minWidth, availableWidth / maxCols);
+				const baseHeight = 30;
+
+				const captionNode = tnode.children?.find(
+					(child: any) => child.tagName === 'caption'
+				);
+				return (
+					<ScrollView
+						horizontal
+						showsHorizontalScrollIndicator
+						style={{ marginVertical: 8 }}
+					>
+						<View
+							style={{ flexDirection: 'column', width: maxCols * cellWidth }}
+						>
+							{captionNode && (
+								<View
+									style={{
+										padding: 4,
+										backgroundColor: '#111827',
+										borderWidth: 1,
+										borderColor: '#4b5563',
+									}}
+								>
+									<TNodeChildrenRenderer tnode={captionNode} />
+								</View>
+							)}
+
+							{matrix.map((row, rowIndex) => (
+								<View
+									key={rowIndex}
+									style={{ height: baseHeight, position: 'relative' }}
+								>
+									{row.map((cell, colIndex) => {
+										if (!cell || !cell.isMain) return null;
+
+										const isHeader = cell.node.tagName === 'th';
+
+										return (
+											<View
+												key={`${rowIndex}-${colIndex}`}
+												style={{
+													position: 'absolute',
+													left: colIndex * cellWidth,
+													top: 0,
+													width: cellWidth * cell.colspan,
+													height: baseHeight * cell.rowspan,
+													borderWidth: 1,
+													borderColor: '#4b5563',
+													padding: 4,
+													backgroundColor: isHeader ? '#374151' : '#1f2937',
+													justifyContent: 'center',
+												}}
+											>
+												<TNodeChildrenRenderer tnode={cell.node} />
+											</View>
+										);
+									})}
+								</View>
+							))}
+						</View>
+					</ScrollView>
+				);
+			},
+		}),
+		[width]
+	);
+
+	if (!description) return null;
+
+	return (
+		<View className='mt-8 bg-gray-800/80 p-1 rounded-xl border border-gray-700 shadow-lg'>
+			<Text className='text-white text-2xl font-bold mb-4 text-center pb-2 border-b border-gray-600'>
+				Технічні характеристики
+			</Text>
+			<View className='px-3'>
+				<RenderHtml
+					source={{ html: description }}
+					tagsStyles={tagsStyles}
+					customHTMLElementModels={customHTMLElementModels}
+					renderers={renderers}
+					enableExperimentalBRCollapsing
+					enableExperimentalGhostLinesPrevention
+					contentWidth={width}
+				/>
+			</View>
+		</View>
+	);
+});

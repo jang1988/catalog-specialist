@@ -292,6 +292,7 @@ export function useProductDetails(
 			'collet',
 			'thread_papa',
 			'diameter_tube',
+			'size',
 		];
 
 		// Проверяем наличие полей collet и thread_papa в вариантах

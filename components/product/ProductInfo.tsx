@@ -1,24 +1,12 @@
-import { Product, Variant } from '@/types/interfaces';
+import {
+	CharacteristicRowProps,
+	PriceDisplayProps,
+	Product,
+	ProductInfoProps,
+	Variant,
+} from '@/types/interfaces';
 import { ReactNode } from 'react';
 import { Text, View } from 'react-native';
-
-interface ProductInfoProps {
-	product?: Product;
-	actualVariant: Variant;
-	getTypeName: (type: string) => string;
-}
-
-interface CharacteristicRowProps {
-	label: string;
-	value: string | number | string[];
-	unit?: string;
-	prefix?: string;
-}
-
-interface PriceDisplayProps {
-	currentPrice: string | number;
-	oldPrice?: string | number;
-}
 
 // Конфигурация характеристик для легкого редактирования
 const CHARACTERISTICS_CONFIG = [

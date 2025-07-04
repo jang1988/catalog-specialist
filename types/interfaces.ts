@@ -4,6 +4,7 @@ export interface Product {
 	name: string;
 	img_url: string;
 	desc?: string;
+	dimension?: string;
 	site?: string;
 
 	// Характеристики
@@ -66,6 +67,24 @@ export interface Variant {
 	disc?: string;
 	input_voltage?: string;
 	output_voltage?: string;
+}
+
+export interface ProductInfoProps {
+	product?: Product;
+	actualVariant: Variant;
+	getTypeName: (type: string) => string;
+}
+
+export interface CharacteristicRowProps {
+	label: string;
+	value: string | number | string[];
+	unit?: string;
+	prefix?: string;
+}
+
+export interface PriceDisplayProps {
+	currentPrice: string | number;
+	oldPrice?: string | number;
 }
 
 // 🗂 Группы

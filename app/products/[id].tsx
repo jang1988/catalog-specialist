@@ -1,6 +1,7 @@
 import { AddToCartButton } from '@/components/buttons/AddToCartButton';
 import { CallButton } from '@/components/buttons/CallButton';
 import { DeliveryInfo } from '@/components/product/DeliveryInfo';
+import { DimensionModal } from '@/components/product/DimensionModal';
 import { DiscountBadge } from '@/components/product/DiscountBadge';
 import { ProductDesc } from '@/components/product/ProductDesc';
 import { ProductImage } from '@/components/product/ProductImage';
@@ -8,7 +9,7 @@ import { ProductInfo } from '@/components/product/ProductInfo';
 import { ProductOptionsSection } from '@/components/product/ProductOptionsSection';
 import { useProductDetails } from '@/hooks/useProductDetails';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -59,11 +60,12 @@ const ProductNotFoundState = ({ onGoBack }: { onGoBack: () => void }) => (
 	</View>
 );
 
-// Компонент для отображения опций продукта
+// Модальное окно для размеров продукта
 
 export default function ProductDetails() {
 	const router = useRouter();
 	const { id, table } = useLocalSearchParams();
+	const [isDimensionModalVisible, setIsDimensionModalVisible] = useState(false);
 
 	const productDetailsHook = useProductDetails(id, table);
 	const {
@@ -167,6 +169,18 @@ export default function ProductDetails() {
 					{/* Описание продукта */}
 					<ProductDesc description={product.desc} />
 
+					{/* Кнопка размеров продукта */}
+					{product.dimension && (
+						<TouchableOpacity
+							className='px-6 py-3 rounded-full mt-4 active:bg-blue-700 bg-bluer border-blue-600 border-[0.7px] shadow-md shadow-blue-300 active:border-blue-700'
+							onPress={() => setIsDimensionModalVisible(true)}
+						>
+							<Text className='text-white text-lg font-semibold text-center tracking-wider'>
+								ГАБАРИТНІ РОЗМІРИ
+							</Text>
+						</TouchableOpacity>
+					)}
+
 					{/* Кнопка "Назад" */}
 					<View className='flex-row justify-center mt-4'>
 						<TouchableOpacity
@@ -180,6 +194,13 @@ export default function ProductDetails() {
 					</View>
 				</View>
 			</ScrollView>
+
+			{/* Модальное окно с размерами */}
+			<DimensionModal
+				visible={isDimensionModalVisible}
+				onClose={() => setIsDimensionModalVisible(false)}
+				dimension={product.dimension}
+			/>
 		</View>
 	);
 }
