@@ -1,11 +1,10 @@
-import { createTableMatrix } from '@/utils/tableMatrix';
+import { createTableRenderer } from '@/components/product/TableMatrix';
 import React from 'react';
-import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Text, useWindowDimensions, View } from 'react-native';
 import RenderHtml, {
 	HTMLContentModel,
 	HTMLElementModel,
 	MixedStyleRecord,
-	TNodeChildrenRenderer,
 } from 'react-native-render-html';
 
 type ProductDescProps = {
@@ -83,20 +82,24 @@ export const ProductDesc = React.memo(({ description }: ProductDescProps) => {
 			th: {
 				borderWidth: 1,
 				borderColor: '#4b5563',
-				padding: 4,
+				padding: 8,
 				color: '#ffffff',
 				backgroundColor: '#374151',
 				fontWeight: 'bold',
-				fontSize: 8,
-				lineHeight: 10,
+				fontSize: 12,
+				lineHeight: 16,
+				textAlign: 'left',
+				flexWrap: 'wrap',
 			},
 			td: {
 				borderWidth: 1,
 				borderColor: '#4b5563',
-				padding: 4,
+				padding: 8,
 				color: '#e5e7eb',
-				fontSize: 12,
-				lineHeight: 14,
+				fontSize: 14,
+				lineHeight: 18,
+				textAlign: 'left',
+				flexWrap: 'wrap',
 			},
 			tr: {
 				flexDirection: 'row',
@@ -152,83 +155,7 @@ export const ProductDesc = React.memo(({ description }: ProductDescProps) => {
 		[]
 	);
 
-	const renderers = React.useMemo(
-		() => ({
-			table: (props: any) => {
-				const { tnode } = props;
-				const { matrix, maxCols } = createTableMatrix(tnode);
-
-				if (matrix.length === 0) return null;
-
-				const minWidth = 100;
-				const availableWidth = width - 30;
-				const cellWidth = Math.max(minWidth, availableWidth / maxCols);
-				const baseHeight = 30;
-
-				const captionNode = tnode.children?.find(
-					(child: any) => child.tagName === 'caption'
-				);
-				return (
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator
-						style={{ marginVertical: 8 }}
-					>
-						<View
-							style={{ flexDirection: 'column', width: maxCols * cellWidth }}
-						>
-							{captionNode && (
-								<View
-									style={{
-										padding: 4,
-										backgroundColor: '#111827',
-										borderWidth: 1,
-										borderColor: '#4b5563',
-									}}
-								>
-									<TNodeChildrenRenderer tnode={captionNode} />
-								</View>
-							)}
-
-							{matrix.map((row, rowIndex) => (
-								<View
-									key={rowIndex}
-									style={{ height: baseHeight, position: 'relative' }}
-								>
-									{row.map((cell, colIndex) => {
-										if (!cell || !cell.isMain) return null;
-
-										const isHeader = cell.node.tagName === 'th';
-
-										return (
-											<View
-												key={`${rowIndex}-${colIndex}`}
-												style={{
-													position: 'absolute',
-													left: colIndex * cellWidth,
-													top: 0,
-													width: cellWidth * cell.colspan,
-													height: baseHeight * cell.rowspan,
-													borderWidth: 1,
-													borderColor: '#4b5563',
-													padding: 4,
-													backgroundColor: isHeader ? '#374151' : '#1f2937',
-													justifyContent: 'center',
-												}}
-											>
-												<TNodeChildrenRenderer tnode={cell.node} />
-											</View>
-										);
-									})}
-								</View>
-							))}
-						</View>
-					</ScrollView>
-				);
-			},
-		}),
-		[width]
-	);
+	const renderers = React.useMemo(() => createTableRenderer(width), [width]);
 
 	if (!description) return null;
 
