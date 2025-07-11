@@ -93,6 +93,8 @@ const Search = () => {
 				columnWrapperStyle={{
 					justifyContent: 'center',
 					gap: 16,
+					width: '45%',
+					marginHorizontal: 'auto',
 				}}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: 80 }}

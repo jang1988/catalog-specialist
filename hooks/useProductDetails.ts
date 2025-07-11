@@ -40,6 +40,8 @@ export function useProductDetails(
 	const [selectedDiameterTree, setSelectedDiameterTree] = useState('');
 	const [selectedDiameterTube, setSelectedDiameterTube] = useState('');
 	const [selectedColorTube, setSelectedColorTube] = useState('');
+	const [selectedSeriesValve, setSelectedSeriesValve] = useState('');
+	const [selectedNumberPlaces, setSelectedNumberPlaces] = useState('');
 
 	const [actualVariant, setActualVariant] = useState<Variant | null>(null);
 
@@ -56,15 +58,6 @@ export function useProductDetails(
 			try {
 				const data = await fetchProductById(normalizedId, normalizedTable);
 				setProduct(data);
-
-				// Устанавливаем начальное значение thread если есть варианты
-				if (data.variants?.length) {
-					const threads = Array.from(
-						new Set(data.variants.map(v => v.thread || ''))
-					).filter(t => t);
-					const initialThread = threads[0] || '';
-					setSelectedThread(prev => prev || initialThread);
-				}
 			} catch (err: any) {
 				setError(err.message || 'Ошибка загрузки');
 			} finally {
@@ -114,6 +107,8 @@ export function useProductDetails(
 			diameter_tree: selectedDiameterTree,
 			diameter_tube: selectedDiameterTube,
 			color_tube: selectedColorTube,
+			series_valve: selectedSeriesValve,
+			number_places: selectedNumberPlaces,
 		};
 
 		// Проверка соответствия варианта заданным критериям
@@ -213,6 +208,8 @@ export function useProductDetails(
 		selectedDiameterTree,
 		selectedDiameterTube,
 		selectedColorTube,
+		selectedSeriesValve,
+		selectedNumberPlaces,
 	]);
 
 	// Синхронизация состояния перед рендерингом
@@ -225,6 +222,8 @@ export function useProductDetails(
 		setActualVariant(computedVariant);
 
 		// Обновляем выбранные значения только если они отличаются от вычисленного варианта
+		if (computedVariant.thread !== selectedThread)
+			setSelectedThread(computedVariant.thread || '');
 		if (computedVariant.voltage !== selectedVoltage)
 			setSelectedVoltage(computedVariant.voltage || '');
 		if (computedVariant.type !== selectedType)
@@ -277,6 +276,10 @@ export function useProductDetails(
 			setSelectedDiameterTube(computedVariant.diameter_tube || '');
 		if (computedVariant.color_tube !== selectedColorTube)
 			setSelectedColorTube(computedVariant.color_tube || '');
+		if (computedVariant.series_valve !== selectedSeriesValve)
+			setSelectedSeriesValve(computedVariant.series_valve || '');
+		if (computedVariant.number_places !== selectedNumberPlaces)
+			setSelectedNumberPlaces(computedVariant.number_places || '');
 	}, [computedVariant]);
 
 	// Получить совместимые значения для конкретного поля на основе текущих выборов
@@ -293,14 +296,21 @@ export function useProductDetails(
 			'thread_papa',
 			'diameter_tube',
 			'size',
+			'series_valve',
 		];
 
 		// Проверяем наличие полей collet и thread_papa в вариантах
+		const hasThread = product.variants.some(v => v['thread']);
+		const hasSize = product.variants.some(v => v['size']);
 		const hasCollet = product.variants.some(v => v['collet']);
 		const hasThreadPapa = product.variants.some(v => v['thread_papa']);
 		const hasDiameterTube = product.variants.some(v => v['diameter_tube']);
 
 		let filteredFields = [...alwaysShowAll];
+
+		if (hasThread && hasSize) {
+			filteredFields = filteredFields.filter(f => f !== 'size');
+		}
 
 		if (hasCollet && hasThreadPapa) {
 			filteredFields = filteredFields.filter(f => f !== 'thread_papa');
@@ -353,6 +363,8 @@ export function useProductDetails(
 							diameter_tree: selectedDiameterTree,
 							diameter_tube: selectedDiameterTube,
 							color_tube: selectedColorTube,
+							series_valve: selectedSeriesValve,
+							number_places: selectedNumberPlaces,
 						}).every(
 							([key, val]) =>
 								// Условие совместимости: либо это текущее поле (которое мы ищем),
@@ -450,6 +462,8 @@ export function useProductDetails(
 		selectedDiameterTree,
 		selectedDiameterTube,
 		selectedColorTube,
+		selectedSeriesValve,
+		selectedNumberPlaces,
 
 		// Сеттеры
 		setSelectedVoltage,
@@ -479,6 +493,8 @@ export function useProductDetails(
 		setSelectedDiameterTree,
 		setSelectedDiameterTube,
 		setSelectedColorTube,
+		setSelectedSeriesValve,
+		setSelectedNumberPlaces,
 
 		// Вспомогательные методы
 		getCompatibleValues,

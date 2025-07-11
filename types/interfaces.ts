@@ -67,6 +67,8 @@ export interface Variant {
 	disc?: string;
 	input_voltage?: string;
 	output_voltage?: string;
+	series_valve?: string;
+	number_places?: string;
 }
 
 export interface ProductInfoProps {

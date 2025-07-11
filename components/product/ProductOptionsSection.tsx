@@ -157,6 +157,18 @@ const PRODUCT_OPTIONS_CONFIG = [
 		stateKey: 'selectedColorTube',
 		setterKey: 'setSelectedColorTube',
 	},
+	{
+		key: 'series_valve',
+		title: 'Серія пневморозподільникa',
+		stateKey: 'selectedSeriesValve',
+		setterKey: 'setSelectedSeriesValve',
+	},
+	{
+		key: 'number_places',
+		title: 'Число місць на плиті',
+		stateKey: 'selectedNumberPlaces',
+		setterKey: 'setSelectedNumberPlaces',
+	},
 ];
 
 export const ProductOptionsSection = ({

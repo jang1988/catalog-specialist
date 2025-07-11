@@ -21,7 +21,7 @@ export const CategoryContent = ({
 	onRetry,
 }: CategoryContentProps) => {
 	const listRef = useRef<FlatList<Product>>(null);
-
+	
 	useEffect(() => {
 		listRef.current?.scrollToOffset({ offset: 0, animated: false });
 	}, [selectedGroup]);
@@ -104,8 +104,8 @@ export const CategoryContent = ({
 				</Text>
 			}
 			removeClippedSubviews={true}
-			maxToRenderPerBatch={10}
-			initialNumToRender={10}
+			maxToRenderPerBatch={8}
+			initialNumToRender={8}
 			windowSize={5}
 			nestedScrollEnabled={true}
 			extraData={selectedGroup}

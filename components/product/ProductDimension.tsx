@@ -163,7 +163,7 @@ export const ProductDimension = React.memo(
 		return (
 			<View className='mt-8 bg-gray-800/80 p-1 rounded-xl border border-gray-700 shadow-lg'>
 				<Text className='text-white text-2xl font-bold mb-4 text-center pb-2 border-b border-gray-600'>
-					Технічні характеристики
+					ГАБАРИТНІ РОЗМІРИ
 				</Text>
 				<View className='px-3'>
 					<RenderHtml
